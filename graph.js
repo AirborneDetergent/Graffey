@@ -89,21 +89,17 @@ class Display {
 			for(let i = Math.round(this.camera.minX / scaleX) * scaleX; i <= Math.round(this.camera.maxX / scaleX) * scaleX; i+= scaleX) {
 				if(i == 0) continue;
 				let x = this.camera.ssx(i);
-				let y = clamp(this.camera.ssy(0) + 12, 12, this.height - 12);
+				let y = clamp(this.camera.ssy(0) + 12, 12, this.height - 9);
 				let disp = numDisplay(i, scaleX);
 				this.ctx.strokeText(disp, x, y);
 				this.ctx.fillText(disp, x, y);
 			}
-			if(this.camera.ssx(0) <= 10) {
-				this.ctx.textAlign = 'left';
-			} else {
-				this.ctx.textAlign = 'right';
-			}
+			this.ctx.textAlign = 'right';
 			for(let i = Math.round(this.camera.minY / scaleY) * scaleY; i <= Math.round(this.camera.maxY / scaleY) * scaleY; i+= scaleY) {
 				if(i == 0) continue;
-				let x = clamp(this.camera.ssx(0) - 2, 2, this.width - 2);
-				let y = this.camera.ssy(i);
 				let disp = numDisplay(i, scaleY);
+				let x = clamp(this.camera.ssx(0) - 2, 2 + this.ctx.measureText(disp).width, this.width - 2);
+				let y = this.camera.ssy(i);
 				this.ctx.strokeText(disp, x, y);
 				this.ctx.fillText(disp, x, y);
 			}
