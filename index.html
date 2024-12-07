@@ -18,17 +18,21 @@
 	</template>
 	
 	<body>
-		<div class="border-end d-flex flex-column" style="width: 30vw; height: 100vh;">
-			<table id="equation-table" class="table align-middle table-sm">
-				<!-- Table does not generate a <tbody> unless it has something in it -->
-				<tr>
-				</tr>
-			</table>
-			<div onclick="equaTable.addEquation()" class="h-100">
-				<button class="nohover btn fs-3 text-primary bi-plus-lg position-relative start-50 translate-middle" style="border: none !important;"></button>
+		<div id="container">
+			<div class="border-end d-flex flex-column" style="width: 700px; height: 100vh;">
+				<table id="equation-table" class="table align-middle table-sm">
+					<!-- Table does not generate a <tbody> unless it has something in it -->
+					<tr>
+					</tr>
+				</table>
+				<div onclick="equaTable.addEquation()" class="h-100">
+					<button class="nohover btn fs-3 text-primary bi-plus-lg position-relative start-50 translate-middle" style="border: none !important;"></button>
+				</div>
 			</div>
+			<canvas id="display"></canvas>
 		</div>
 		<script src="equation-table.js"></script>
+		<script src="graph.js"></script>
 		<script src="main.js"></script>
 	</body>
 </html>
