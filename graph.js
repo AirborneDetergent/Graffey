@@ -2,8 +2,16 @@ function toColor(gray) {
 	return `rgb(${gray}, ${gray}, ${gray})`;
 }
 
+function numDisplay(n, s) {
+	return n;
+}
+
+function clamp(n, min, max) {
+	return Math.min(Math.max(n, min), max);
+}
+
 // Max 5
-const GRID_COUNT = 5;
+const GRID_COUNT = 4;
 
 class Display {
 	constructor() {
@@ -32,15 +40,20 @@ class Display {
 	}
 	
 	render() {
+		this.drawGraphBackground();
+	}
+	
+	drawGraphBackground() {
 		this.canvas.width = this.width;
 		this.canvas.height = this.height;
 		this.ctx.fillRect(0, 0, this.width, this.height);
-		const shades = [16, 32, 64, 96, 128];
+		const shades = [8, 16, 32, 64, 128];
 		for(let i = shades.length - GRID_COUNT; i < shades.length; i++) {
 			this.ctx.strokeStyle = toColor(shades[i]);
-			this.drawGrid(7 - i);
+			this.drawGrid(7 - i, i == shades.length - 1);
 		}
 		this.ctx.strokeStyle = toColor(255);
+		this.ctx.lineWidth = 2;
 		this.ctx.beginPath();
 		this.ctx.moveTo(this.camera.ssx(0), 0);
 		this.ctx.lineTo(this.camera.ssx(0), this.height + 1);
@@ -49,22 +62,53 @@ class Display {
 		this.ctx.stroke();
 	}
 	
-	drawGrid(granularity) {
+	drawGrid(granularity, numbers = false) {
 		this.ctx.beginPath();
 		let aspect = this.width / this.height;
-		let scale = (this.camera.maxX - this.camera.minX) / aspect;
-		scale = 2 ** Math.ceil(Math.log2(scale) - granularity);
-		for(let i = Math.round(this.camera.minX / scale) * scale; i <= Math.round(this.camera.maxX / scale) * scale; i+= scale) {
+		let scaleX = (this.camera.maxX - this.camera.minX) / aspect;
+		scaleX = 2 ** Math.ceil(Math.log2(scaleX) - granularity);
+		if(numbers) console.log(scaleX);
+		for(let i = Math.round(this.camera.minX / scaleX) * scaleX; i <= Math.round(this.camera.maxX / scaleX) * scaleX; i+= scaleX) {
 			this.ctx.moveTo(this.camera.ssx(i), 0);
 			this.ctx.lineTo(this.camera.ssx(i), this.height + 1);
 		}
-		scale = this.camera.maxY - this.camera.minY;
-		scale = 2 ** Math.ceil(Math.log2(scale) - granularity);
-		for(let i = Math.round(this.camera.minY / scale) * scale; i <= Math.round(this.camera.maxY / scale) * scale; i+= scale) {
+		let scaleY = this.camera.maxY - this.camera.minY;
+		scaleY = 2 ** Math.ceil(Math.log2(scaleY) - granularity);
+		for(let i = Math.round(this.camera.minY / scaleY) * scaleY; i <= Math.round(this.camera.maxY / scaleY) * scaleY; i+= scaleY) {
 			this.ctx.moveTo(0, this.camera.ssy(i));
 			this.ctx.lineTo(this.width + 1, this.camera.ssy(i));
 		}
 		this.ctx.stroke();
+		if(numbers) {
+			this.ctx.textBaseline = 'middle';
+			this.ctx.textAlign = 'center';
+			this.ctx.font = '20px arial';
+			this.ctx.fillStyle = 'white';
+			this.ctx.strokeStyle = 'black';
+			this.ctx.lineWidth = 5;
+			for(let i = Math.round(this.camera.minX / scaleX) * scaleX; i <= Math.round(this.camera.maxX / scaleX) * scaleX; i+= scaleX) {
+				if(i == 0) continue;
+				let x = this.camera.ssx(i);
+				let y = clamp(this.camera.ssy(0) + 12, 12, this.height - 12);
+				let disp = numDisplay(i, scaleX);
+				this.ctx.strokeText(disp, x, y);
+				this.ctx.fillText(disp, x, y);
+			}
+			if(this.camera.ssx(0) <= 10) {
+				this.ctx.textAlign = 'left';
+			} else {
+				this.ctx.textAlign = 'right';
+			}
+			for(let i = Math.round(this.camera.minY / scaleY) * scaleY; i <= Math.round(this.camera.maxY / scaleY) * scaleY; i+= scaleY) {
+				if(i == 0) continue;
+				let x = clamp(this.camera.ssx(0) - 2, 2, this.width - 2);
+				let y = this.camera.ssy(i);
+				let disp = numDisplay(i, scaleY);
+				this.ctx.strokeText(disp, x, y);
+				this.ctx.fillText(disp, x, y);
+			}
+			this.ctx.lineWidth = 1;
+		}
 	}
 }
 
