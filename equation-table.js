@@ -32,10 +32,14 @@ class EquationTable {
 		let delButton = equa.querySelector('#equation-delete');
 		delButton.onclick = () => {
 			equa.remove();
-			console.log(equa.id);
-			console.log(this.equations[equa.id]);
 			delete this.equations[equa.id];
 		};
-		this.equations[equa.id] = {r, g, b};
+		let content = equa.querySelector('#equation-content');
+		content.oninput = (e) => {
+			let id = e.target.parentElement.parentElement.id;
+			this.equations[id].content = e.target.value;
+			this.equations[id].isModified = true;
+		}
+		this.equations[equa.id] = {r, g, b, content: '', isModified: false};
 	}
 }

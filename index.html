@@ -12,14 +12,14 @@
 	<template id="equation">
 		<tr>
 			<td><button id="equation-button" class="nohover btn bi bi-graph-up fs-3"></button></td>
-			<td class="w-100"><input type="text" class="form-control"></td>
+			<td class="w-100"><input id="equation-content"type="text" class="form-control"></td>
 			<td class="w-auto"><button id="equation-delete" class="nohover btn text-danger bi bi-x-lg" style="border: none !important;"></button></td>
 		</tr>
 	</template>
 	
-	<body>
+	<body style="overflow: hidden">
 		<div id="container">
-			<div class="border-end d-flex flex-column" style="width: 700px; height: 100vh;">
+			<div id="equation-container" class="border-end d-flex flex-column">
 				<table id="equation-table" class="table align-middle table-sm">
 					<!-- Table does not generate a <tbody> unless it has something in it -->
 					<tr>
@@ -29,10 +29,15 @@
 					<button class="nohover btn fs-3 text-primary bi-plus-lg position-relative start-50 translate-middle" style="border: none !important;"></button>
 				</div>
 			</div>
-			<canvas id="display"></canvas>
+			<div style="width: 100%; height: 100%;">
+				<canvas id="gl-canvas" class="border border-danger"></canvas>
+				<canvas id="display" class="border border-primary"></canvas>
+			</div>
+			
 		</div>
 		<script src="equation-table.js"></script>
 		<script src="graph.js"></script>
+		<script src="renderer.js"></script>
 		<script src="main.js"></script>
 	</body>
 </html>

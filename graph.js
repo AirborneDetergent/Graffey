@@ -11,11 +11,12 @@ function clamp(n, min, max) {
 }
 
 // Max 5
-const GRID_COUNT = 4;
+const GRID_COUNT = 5;
 
 class Display {
 	constructor() {
 		this.hasResized = false;
+		/** @type {HTMLCanvasElement} */
 		this.canvas = document.getElementById('display');
 		/** @type {CanvasRenderingContext2D} */
 		this.ctx = this.canvas.getContext('2d');
@@ -67,7 +68,6 @@ class Display {
 		let aspect = this.width / this.height;
 		let scaleX = (this.camera.maxX - this.camera.minX) / aspect;
 		scaleX = 2 ** Math.ceil(Math.log2(scaleX) - granularity);
-		if(numbers) console.log(scaleX);
 		for(let i = Math.round(this.camera.minX / scaleX) * scaleX; i <= Math.round(this.camera.maxX / scaleX) * scaleX; i+= scaleX) {
 			this.ctx.moveTo(this.camera.ssx(i), 0);
 			this.ctx.lineTo(this.camera.ssx(i), this.height + 1);
