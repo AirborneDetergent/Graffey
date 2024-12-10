@@ -30,11 +30,57 @@
 				</div>
 			</div>
 			<div style="width: 100%; height: 100%;">
-				<canvas id="gl-canvas" class="border border-danger"></canvas>
-				<canvas id="display" class="border border-primary"></canvas>
+				<canvas id="gl-canvas"></canvas>
+				<canvas id="display"></canvas>
 			</div>
-			
 		</div>
+		<script id="plotShader" src="plot.frag" type="x-shader/x-fragment">#version 300 es
+			precision highp float;
+
+			uniform vec2 resolution;
+			uniform vec4 bounds;
+			uniform vec3 color;
+			
+			float func(vec2 p) {
+				float x = p.x;
+				float y = p.y;
+				float theta = atan(y, x);
+				float tau = 6.2831853071;
+				float pi = tau / 2.0;
+				if(theta < 0.0) {
+					theta += 6.2831853071;
+				}
+				float r = sqrt(x * x + y * y);
+				return FUNCTION;
+			}
+			
+			vec2 pixToCoord(vec2 p) {
+				p /= resolution;
+				return p * (bounds.zw - bounds.xy) + bounds.xy;
+			}
+			
+			out vec4 fragColor;
+			
+			void main() {
+				float neg = 0.0;
+				float pos = 0.0;
+				vec2[] offsets = vec2[](
+					vec2(0.0, 0.0),
+					vec2(0.0, 1.0),
+					vec2(1.0, 0.0),
+					vec2(0.0, -1.0),
+					vec2(-1.0, 0.0)
+				);
+				for(int i = 0; i < 5; i++) {
+					vec2 p = pixToCoord(gl_FragCoord.xy + offsets[i]);
+					float v = func(p);
+					if(v < 0.0) neg += 1.0;
+					if(v >= 0.0) pos += 1.0;
+				}
+				float line = (neg * pos) / 3.0;
+				fragColor = vec4(color, line);
+			}
+		</script>
 		<script src="equation-table.js"></script>
 		<script src="graph.js"></script>
 		<script src="renderer.js"></script>

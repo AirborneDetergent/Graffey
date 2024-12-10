@@ -40,6 +40,6 @@ class EquationTable {
 			this.equations[id].content = e.target.value;
 			this.equations[id].isModified = true;
 		}
-		this.equations[equa.id] = {r, g, b, content: '', isModified: false};
+		this.equations[equa.id] = {r, g, b, content: '', isModified: true};
 	}
 }

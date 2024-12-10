@@ -28,7 +28,7 @@
 }
 
 #equation-container {
-	overflow-y: scroll;
+	overflow-y: auto;
 	width: 700px;
 	height: 100vh;
 }
