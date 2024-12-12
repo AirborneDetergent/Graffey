@@ -20,8 +20,7 @@ class Renderer {
 		
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertBuffer);
 		
-		//this.program = this.makeShaderProgram('sin(x * x + y * y)');
-		//this.gl.useProgram(this.program);
+		this.compiler = new Compiler();
 	}
 	
 	makeShaderProgram(equaContent) {
@@ -41,8 +40,8 @@ class Renderer {
 		}
 		
 		let fragShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-		let source = document.getElementById('plotShader').textContent;
-		source = source.replace('FUNCTION', equaContent);
+		let source = document.getElementById('plot-shader').textContent;
+		source = source.replace('FUNCTION', this.compiler.compile(equaContent));
 		this.gl.shaderSource(fragShader, source);
 		this.gl.compileShader(fragShader);
 		
@@ -76,11 +75,9 @@ class Renderer {
 		this.glCanvas.style.width = this.display.canvas.offsetWidth + 'px';
 		this.glCanvas.style.height = this.display.canvas.offsetHeight + 'px';
 		this.gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
-		let outStr = "";
 		this.gl.clearColor(0, 0, 0, 0);
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 		for(let id in this.equaTable.equations) {
-			outStr += id + "\n";
 			let equa = this.equaTable.equations[id];
 			if(equa.isModified) {
 				equa.isModified = false;
@@ -97,6 +94,5 @@ class Renderer {
 				this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 			}
 		}
-		//console.log(outStr);
 	}
 }

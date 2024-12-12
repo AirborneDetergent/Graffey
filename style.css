@@ -32,3 +32,19 @@
 	width: 700px;
 	height: 100vh;
 }
+
+#equation-content {
+	font-family: Consolas;
+}
+
+#perf-meter {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	z-index: 1000;
+	background: rgba(0, 0, 0, 0.5);
+	white-space: pre;
+	font-family: Consolas;
+	font-size: 75%;
+	text-align: right;
+}

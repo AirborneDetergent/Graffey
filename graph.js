@@ -150,7 +150,7 @@ class Camera {
 	}
 	
 	handleWheel(event) {
-		let ratio = 1.1 ** (event.deltaY / 100);
+		let ratio = 1.2 ** (event.deltaY / 100);
 		let mx = (event.x - event.originalTarget.offsetLeft) * window.devicePixelRatio / this.display.width;
 		let my = 1 -  (event.y - event.originalTarget.offsetTop) * window.devicePixelRatio / this.display.height;
 		mx = mx * (this.maxX - this.minX) + this.minX;

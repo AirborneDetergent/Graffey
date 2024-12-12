@@ -12,7 +12,9 @@
 	<template id="equation">
 		<tr>
 			<td><button id="equation-button" class="nohover btn bi bi-graph-up fs-3"></button></td>
-			<td class="w-100"><input id="equation-content"type="text" class="form-control"></td>
+			<td class="w-100">
+				<textarea id="equation-content" rows="1" type="text" class="form-control"></textarea>
+			</td>
 			<td class="w-auto"><button id="equation-delete" class="nohover btn text-danger bi bi-x-lg" style="border: none !important;"></button></td>
 		</tr>
 	</template>
@@ -34,7 +36,9 @@
 				<canvas id="display"></canvas>
 			</div>
 		</div>
-		<script id="plotShader" src="plot.frag" type="x-shader/x-fragment">#version 300 es
+		<div id="perf-meter"></div>
+		
+		<script id="plot-shader" src="plot.frag" type="x-shader/x-fragment">#version 300 es
 			precision highp float;
 
 			uniform vec2 resolution;
@@ -83,6 +87,7 @@
 		</script>
 		<script src="equation-table.js"></script>
 		<script src="graph.js"></script>
+		<script src="compiler.js"></script>
 		<script src="renderer.js"></script>
 		<script src="main.js"></script>
 	</body>
