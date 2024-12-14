@@ -3,6 +3,7 @@ class EquationTable {
 		this.table = document.getElementById('equation-table').children[0];
 		this.nextId = 0;
 		this.equations = {};
+		this.theta = Math.random() * 2 * Math.PI;
 	}
 	
 	newEquation(r, g, b) {
@@ -13,12 +14,16 @@ class EquationTable {
 	}
 	
 	randomColor() {
-		let theta = Math.random() * 2 * Math.PI;
-		let A = Math.cos(theta) / Math.sqrt(2) / 2;
-		let B = Math.sin(theta) / Math.sqrt(6) / 2;
+		this.theta += (Math.random() * 0.5 + 1) * Math.PI * 2 / 8;
+		let A = Math.cos(this.theta) / Math.sqrt(2) / 2;
+		let B = Math.sin(this.theta) / Math.sqrt(6) / 2;
 		let r = 0.5 - B + A;
 		let g = 0.5 - B - A;
 		let b = 0.5 + 2 * B;
+		let e = 1 / 2.2;
+		r = r ** e;
+		g = g ** e;
+		b = b ** e;
 		return [r * 255, g * 255, b * 255];
 	}
 	
