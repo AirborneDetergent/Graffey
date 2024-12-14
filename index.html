@@ -11,7 +11,8 @@
 	
 	<template id="equation">
 		<tr>
-			<td><button id="equation-button" class="nohover btn bi bi-graph-up fs-3"></button></td>
+			<!-- The first class in the button MUST be an icon, as it gets changed in code -->
+			<td><button id="equation-button" class="bi-graph-up bi nohover btn fs-3"></button></td>
 			<td class="w-100">
 				<textarea id="equation-content" rows="1" type="text" class="form-control"></textarea>
 			</td>
@@ -24,8 +25,7 @@
 			<div id="equation-container" class="border-end d-flex flex-column">
 				<table id="equation-table" class="table align-middle table-sm">
 					<!-- Table does not generate a <tbody> unless it has something in it -->
-					<tr>
-					</tr>
+					<tr></tr>
 				</table>
 				<div onclick="equaTable.addEquation()" class="h-100">
 					<button class="nohover btn fs-3 text-primary bi-plus-lg position-relative start-50 translate-middle" style="border: none !important;"></button>
@@ -41,29 +41,22 @@
 		<script id="plot-shader" src="plot.frag" type="x-shader/x-fragment">#version 300 es
 			precision highp float;
 
-			uniform vec2 resolution;
-			uniform vec4 bounds;
-			uniform vec3 color;
+			uniform vec2 _resolution;
+			uniform vec4 _bounds;
+			uniform vec3 _color;
 			
-			float func(vec2 p) {
-				float x = p.x;
-				float y = p.y;
-				float theta = atan(y, x);
-				float tau = 6.2831853071;
-				float pi = tau / 2.0;
-				if(theta < 0.0) {
-					theta += 6.2831853071;
-				}
-				float r = sqrt(x * x + y * y);
+			float _func(vec2 _p) {
+				float x = _p.x;
+				float y = _p.y;
 				return FUNCTION;
 			}
 			
-			vec2 pixToCoord(vec2 p) {
-				p /= resolution;
-				return p * (bounds.zw - bounds.xy) + bounds.xy;
+			vec2 _pixToCoord(vec2 p) {
+				p /= _resolution;
+				return p * (_bounds.zw - _bounds.xy) + _bounds.xy;
 			}
 			
-			out vec4 fragColor;
+			out vec4 _fragColor;
 			
 			void main() {
 				float neg = 0.0;
@@ -76,13 +69,13 @@
 					vec2(-1.0, 0.0)
 				);
 				for(int i = 0; i < 5; i++) {
-					vec2 p = pixToCoord(gl_FragCoord.xy + offsets[i]);
-					float v = func(p);
+					vec2 p = _pixToCoord(gl_FragCoord.xy + offsets[i]);
+					float v = _func(p);
 					if(v < 0.0) neg += 1.0;
 					if(v >= 0.0) pos += 1.0;
 				}
 				float line = (neg * pos) / 3.0;
-				fragColor = vec4(color, line);
+				_fragColor = vec4(_color, line);
 			}
 		</script>
 		<script src="equation-table.js"></script>

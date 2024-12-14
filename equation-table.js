@@ -12,23 +12,22 @@ class EquationTable {
 		return equa;
 	}
 	
+	randomColor() {
+		let theta = Math.random() * 2 * Math.PI;
+		let A = Math.cos(theta) / Math.sqrt(2) / 2;
+		let B = Math.sin(theta) / Math.sqrt(6) / 2;
+		let r = 0.5 - B + A;
+		let g = 0.5 - B - A;
+		let b = 0.5 + 2 * B;
+		return [r * 255, g * 255, b * 255];
+	}
+	
 	addEquation() {
-		let r = Math.floor(Math.random() * 128 + 128);
-		let g = Math.floor(Math.random() * 128 + 128);
-		let b = Math.floor(Math.random() * 128 + 128);
-		if(r === undefined) {
-			r = 255;
-			g = 255;
-			b = 255;
-		}
-		if(g === undefined) {
-			g = r;
-			b = r;
-		}
+		let [r, g, b] = this.randomColor();
 		let equa = this.newEquation(r, g, b);
 		this.table.appendChild(equa);
 		equa = this.table.children[this.table.children.length - 1];
-		equa.id = `equation-${this.nextId++}`;
+		equa.id = `equation${this.nextId++}`;
 		let delButton = equa.querySelector('#equation-delete');
 		delButton.onclick = () => {
 			equa.remove();

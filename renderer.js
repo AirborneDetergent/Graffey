@@ -23,7 +23,7 @@ class Renderer {
 		this.compiler = new Compiler();
 	}
 	
-	makeShaderProgram(equaContent) {
+	makeShaderProgram(id, equaContent) {
 		let vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
 		this.gl.shaderSource(vertShader, `#version 300 es
 			in vec2 position;
@@ -81,13 +81,23 @@ class Renderer {
 			let equa = this.equaTable.equations[id];
 			if(equa.isModified) {
 				equa.isModified = false;
-				equa.program = this.makeShaderProgram(this.equaTable.equations[id].content);
+				let wasNull = equa.program === null;
+				equa.program = this.makeShaderProgram(id, this.equaTable.equations[id].content);
+				console.log(id);
+				let button = document.getElementById(id).querySelector('#equation-button');
+				let space = button.className.indexOf(' ');
+				if(equa.program === null && !wasNull) {
+					equa.icon = button.className.substring(0, space);
+					button.className = button.className.replace(equa.icon, 'bi-exclamation-diamond')
+				} else if(wasNull) {
+					button.className = button.className.replace('bi-exclamation-diamond', equa.icon);
+				}
 			}
 			if(equa.program !== null) {
 				this.gl.useProgram(equa.program);
-				let uBounds = this.gl.getUniformLocation(equa.program, 'bounds');
-				let uResolution = this.gl.getUniformLocation(equa.program, 'resolution');
-				let uColor = this.gl.getUniformLocation(equa.program, 'color');
+				let uBounds = this.gl.getUniformLocation(equa.program, '_bounds');
+				let uResolution = this.gl.getUniformLocation(equa.program, '_resolution');
+				let uColor = this.gl.getUniformLocation(equa.program, '_color');
 				this.gl.uniform4f(uBounds, this.display.camera.minX, this.display.camera.minY, this.display.camera.maxX, this.display.camera.maxY);
 				this.gl.uniform2f(uResolution, this.display.width, this.display.height);
 				this.gl.uniform3f(uColor, equa.r / 255, equa.g / 255, equa.b / 255);
