@@ -10,9 +10,6 @@ function clamp(n, min, max) {
 	return Math.min(Math.max(n, min), max);
 }
 
-// Max 5
-const GRID_COUNT = 5;
-
 class Display {
 	constructor() {
 		this.hasResized = false;
@@ -49,9 +46,13 @@ class Display {
 		this.canvas.height = this.height;
 		this.ctx.fillRect(0, 0, this.width, this.height);
 		const shades = [8, 16, 32, 64, 128];
+		this.ctx.translate(0.5, 0.5);
+		// max 5
+		const GRID_COUNT = 3;
 		for(let i = shades.length - GRID_COUNT; i < shades.length; i++) {
 			this.ctx.strokeStyle = toColor(shades[i]);
-			this.drawGrid(7 - i, i == shades.length - 1);
+			this.ctx.lineWidth = 1;
+			this.drawGrid(8 - i, i == shades.length - 1);
 		}
 		this.ctx.strokeStyle = toColor(255);
 		this.ctx.lineWidth = 2;
@@ -61,6 +62,7 @@ class Display {
 		this.ctx.moveTo(0, this.camera.ssy(0));
 		this.ctx.lineTo(this.width + 1, this.camera.ssy(0));
 		this.ctx.stroke();
+		this.ctx.translate(-0.5, -0.5);
 	}
 	
 	drawGrid(granularity, numbers = false) {
@@ -68,12 +70,12 @@ class Display {
 		let aspect = this.width / this.height;
 		let scaleX = (this.camera.maxX - this.camera.minX) / aspect;
 		scaleX = 2 ** Math.ceil(Math.log2(scaleX) - granularity);
+		let scaleY = this.camera.maxY - this.camera.minY;
+		scaleY = 2 ** Math.ceil(Math.log2(scaleY) - granularity);
 		for(let i = Math.round(this.camera.minX / scaleX) * scaleX; i <= Math.round(this.camera.maxX / scaleX) * scaleX; i+= scaleX) {
 			this.ctx.moveTo(this.camera.ssx(i), 0);
 			this.ctx.lineTo(this.camera.ssx(i), this.height + 1);
 		}
-		let scaleY = this.camera.maxY - this.camera.minY;
-		scaleY = 2 ** Math.ceil(Math.log2(scaleY) - granularity);
 		for(let i = Math.round(this.camera.minY / scaleY) * scaleY; i <= Math.round(this.camera.maxY / scaleY) * scaleY; i+= scaleY) {
 			this.ctx.moveTo(0, this.camera.ssy(i));
 			this.ctx.lineTo(this.width + 1, this.camera.ssy(i));
@@ -150,9 +152,9 @@ class Camera {
 	}
 	
 	handleWheel(event) {
-		let ratio = 1.2 ** (event.deltaY / 100);
-		let mx = (event.x - event.originalTarget.offsetLeft) * window.devicePixelRatio / this.display.width;
-		let my = 1 -  (event.y - event.originalTarget.offsetTop) * window.devicePixelRatio / this.display.height;
+		let ratio = 1.15 ** (event.deltaY / 100);
+		let mx = (event.x - this.display.canvas.offsetLeft) * window.devicePixelRatio / this.display.width;
+		let my = 1 - (event.y - this.display.canvas.offsetTop) * window.devicePixelRatio / this.display.height;
 		mx = mx * (this.maxX - this.minX) + this.minX;
 		my = my * (this.maxY - this.minY) + this.minY;
 		this.minX = (this.minX - mx) * ratio + mx;

@@ -3,7 +3,6 @@ class EquationTable {
 		this.table = document.getElementById('equation-table').children[0];
 		this.nextId = 0;
 		this.equations = {};
-		this.theta = Math.random() * 2 * Math.PI;
 	}
 	
 	newEquation(r, g, b) {
@@ -14,9 +13,38 @@ class EquationTable {
 	}
 	
 	randomColor() {
-		this.theta += (Math.random() * 0.5 + 1) * Math.PI * 2 / 8;
-		let A = Math.cos(this.theta) / Math.sqrt(2) / 2;
-		let B = Math.sin(this.theta) / Math.sqrt(6) / 2;
+		let dists = new Array(512);
+		dists.fill(512);
+		let preExisting = false;
+		for(let id in this.equations) {
+			dists[Math.floor(this.equations[id].angle * 512)] = 0;
+			preExisting = true;
+		}
+		let angle;
+		let theta;
+		if(preExisting) {
+			for(let i = 0; i < dists.length * 2; i++) {
+				let wave = dists[(i - 1 + dists.length * 2) % dists.length] + 1;
+				if(dists[i % dists.length] > wave) dists[i % dists.length] = wave;
+			}
+			for(let i = dists.length * 2 - 1; i >= 0; i--) {
+				let wave = dists[(i + 1 + dists.length * 2) % dists.length] + 1;
+				if(dists[i % dists.length] > wave) dists[i % dists.length] = wave;
+			}
+			let angInd = 0;
+			for(let i = 0; i < dists.length; i++) {
+				if(dists[i] > dists[angInd]) angInd = i;
+			}
+			angle = angInd / dists.length;
+			console.log(angle);
+			theta = angle * Math.PI * 2;
+			console.log(dists);
+		} else {
+			angle = Math.random();
+			theta = angle * Math.PI * 2;
+		}
+		let A = Math.cos(theta) / Math.sqrt(2) * 0.61;
+		let B = Math.sin(theta) / Math.sqrt(6) * 0.61;
 		let r = 0.5 - B + A;
 		let g = 0.5 - B - A;
 		let b = 0.5 + 2 * B;
@@ -24,11 +52,11 @@ class EquationTable {
 		r = r ** e;
 		g = g ** e;
 		b = b ** e;
-		return [r * 255, g * 255, b * 255];
+		return [r * 255, g * 255, b * 255, angle];
 	}
 	
 	addEquation() {
-		let [r, g, b] = this.randomColor();
+		let [r, g, b, angle] = this.randomColor();
 		let equa = this.newEquation(r, g, b);
 		this.table.appendChild(equa);
 		equa = this.table.children[this.table.children.length - 1];
@@ -44,6 +72,8 @@ class EquationTable {
 			this.equations[id].content = e.target.value;
 			this.equations[id].isModified = true;
 		}
-		this.equations[equa.id] = {r, g, b, content: '', isModified: true};
+		this.equations[equa.id] = {r, g, b, angle,
+			content: '', 
+			isModified: true};
 	}
 }
