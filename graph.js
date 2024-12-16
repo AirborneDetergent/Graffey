@@ -10,6 +10,12 @@ function clamp(n, min, max) {
 	return Math.min(Math.max(n, min), max);
 }
 
+const MOUSE_LEFT = 0
+const MOUSE_MIDDLE = 1
+
+const DRAG_PAN = 1
+const DRAG_SCALE = 2
+
 class Display {
 	constructor() {
 		this.hasResized = false;
@@ -117,50 +123,75 @@ class Camera {
 		this.minY = -10;
 		this.maxX = 10;
 		this.maxY = 10;
-		this.isDragging = false;
+		this.dragState = false;
 		this.oldMX = 0;
 		this.oldMY = 0;
 		this.display.canvas.addEventListener('pointerdown', this.handleDown.bind(this));
 		window.addEventListener('pointerup', this.handleUp.bind(this));
 		window.addEventListener('pointermove', this.handleDrag.bind(this));
 		this.display.canvas.addEventListener('wheel', this.handleWheel.bind(this));
+		this.scaleCenterX = 0;
+		this.scaleCenterY = 0;
 	}
 	
 	handleUp() {
-		this.isDragging = false;
+		this.dragState = false;
 	}
 	
-	handleDown(event) { 
+	handleDown(event) {
 		this.oldMX = event.x;
 		this.oldMY = event.y;
-		this.isDragging = true;
+		if(event.button == MOUSE_MIDDLE) {
+			this.dragState = DRAG_SCALE;
+			this.scaleCenterX = event.x;
+			this.scaleCenterY = event.y;
+		} else if(event.button == MOUSE_LEFT) {
+			this.dragState = DRAG_PAN;
+		}
+		
 	}
 	
 	handleDrag(event) {
-		if(this.isDragging) {
+		if(this.dragState) {
 			let dx = (this.oldMX - event.x) * window.devicePixelRatio / this.display.width;
 			let dy = -((this.oldMY - event.y) * window.devicePixelRatio / this.display.height);
 			let sx = this.maxX - this.minX;
 			let sy = this.maxY - this.minY;
-			this.minX += dx * sx;
-			this.maxX += dx * sx;
-			this.minY += dy * sy;
-			this.maxY += dy * sy;
+			switch(this.dragState) {
+				case DRAG_PAN:
+					this.minX += dx * sx;
+					this.maxX += dx * sx;
+					this.minY += dy * sy;
+					this.maxY += dy * sy;
+					break;
+				case DRAG_SCALE:
+					if(Math.abs(event.x - this.scaleCenterX) < Math.abs(event.y - this.scaleCenterY)) {
+						dx = 0;
+					} else {
+						dy = 0;
+					}
+					this.zoom(this.scaleCenterX, this.scaleCenterY, 256 ** dx, 256 ** dy);
+					break;
+			}
 			this.oldMX = event.x;
 			this.oldMY = event.y;
 		}
 	}
 	
-	handleWheel(event) {
-		let ratio = 1.15 ** (event.deltaY / 100);
-		let mx = (event.x - this.display.canvas.offsetLeft) * window.devicePixelRatio / this.display.width;
-		let my = 1 - (event.y - this.display.canvas.offsetTop) * window.devicePixelRatio / this.display.height;
+	zoom(cx, cy, zx, zy) {
+		let mx = (cx - this.display.canvas.offsetLeft) * window.devicePixelRatio / this.display.width;
+		let my = 1 - (cy - this.display.canvas.offsetTop) * window.devicePixelRatio / this.display.height;
 		mx = mx * (this.maxX - this.minX) + this.minX;
 		my = my * (this.maxY - this.minY) + this.minY;
-		this.minX = (this.minX - mx) * ratio + mx;
-		this.maxX = (this.maxX - mx) * ratio + mx;
-		this.minY = (this.minY - my) * ratio + my;
-		this.maxY = (this.maxY - my) * ratio + my;
+		this.minX = (this.minX - mx) * zx + mx;
+		this.maxX = (this.maxX - mx) * zx + mx;
+		this.minY = (this.minY - my) * zy + my;
+		this.maxY = (this.maxY - my) * zy + my;
+	}
+	
+	handleWheel(event) {
+		let ratio = 1.15 ** (event.deltaY / 100);
+		this.zoom(event.x, event.y, ratio, ratio);
 	}
 	
 	updateResized(oldWidth, width) {
