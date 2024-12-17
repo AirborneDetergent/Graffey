@@ -24,6 +24,69 @@ class PerfMeter {
 	}
 }
 
+function getSavedGraphs() {
+	let saved = '';
+	for(let i = 0; i < window.localStorage.length; i++) {
+		let entry = window.localStorage.key(i);
+		saved += entry + '\n';
+	}
+	if(saved !== '') {
+		saved = 'Saved Graphs:\n' + saved;
+	}
+	return saved;
+}
+
+function save() {
+	let saved = getSavedGraphs();
+	let name = prompt(saved + 'Graph Name:');
+	if(name) {
+		let data = {
+			equations: equaTable.equations,
+			minX: display.camera.minX,
+			maxX: display.camera.maxX,
+			minY: display.camera.minY,
+			maxY: display.camera.maxY,
+		}
+		window.localStorage.setItem(name, JSON.stringify(data));
+	}
+}
+
+function unsave() {
+	let saved = getSavedGraphs();
+	if(saved == '') {
+		alert('You can\'t unsave what hasn\'t been saved.');
+	} else {
+		let name = prompt(saved + 'Graph to Unsave:');
+		if(name) {
+			window.localStorage.removeItem(name);
+		}
+	}
+}
+
+function load() {
+	let saved = getSavedGraphs();
+	let name = prompt(saved + 'Graph to Load:');
+	if(name == null) return;
+	let json = window.localStorage.getItem(name);
+	if(!json) return;
+	for(let equa of equaTable.table.children) {
+		if(equa.id == 'ignore') continue;
+		equa.remove();
+		delete equaTable.equations[equa.id];
+	}
+	let data = JSON.parse(json);
+	equaTable.equations = data.equations;
+	for(let id in equaTable.equations) {
+		let e = equaTable.equations[id];
+		e.program = null;
+		equaTable.addEquation(e.r, e.g, e.b, e.angle, e.content, id);
+	}
+	display.camera.minX = data.minX;
+	display.camera.maxX = data.maxX;
+	display.camera.minY = data.minY;
+	display.camera.maxY = data.maxY;
+}
+
 function render() {
 	perfMeter.tick();
 	display.render();

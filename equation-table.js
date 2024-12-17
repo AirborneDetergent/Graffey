@@ -5,29 +5,6 @@ class EquationTable {
 		this.equations = {};
 	}
 	
-	save() {
-		let name = prompt('Graph Name');
-		window.localStorage.setItem(name, JSON.stringify(this.equations));
-	}
-	
-	load() {
-		let name = prompt('Graph To Load');
-		if(name == null) return;
-		let json = window.localStorage.getItem(name);
-		if(!json) return;
-		for(let equa of this.table.children) {
-			if(equa.id == 'ignore') continue;
-			equa.remove();
-			delete this.equations[equa.id];
-		}
-		this.equations = JSON.parse(json);
-		for(let id in this.equations) {
-			let e = this.equations[id];
-			e.program = null;
-			this.addEquation(e.r, e.g, e.b, e.angle, e.content, id);
-		}
-	}
-	
 	newEquation(r, g, b) {
 		let equa = document.getElementById('equation').content.cloneNode(true);
 		let button = equa.getElementById('equation-button');

@@ -49,13 +49,14 @@ class Display {
 	}
 	
 	render() {
+		this.canvas.width = this.width;
+		this.canvas.height = this.height;
+		this.ctx.fillStyle = toColor(0);
+		this.ctx.fillRect(0, 0, this.width, this.height);
 		this.drawGraphBackground();
 	}
 	
 	drawGraphBackground() {
-		this.canvas.width = this.width;
-		this.canvas.height = this.height;
-		this.ctx.fillRect(0, 0, this.width, this.height);
 		const shades = [8, 16, 32, 64, 128];
 		this.ctx.translate(-0.5, -0.5);
 		// max 5
@@ -143,6 +144,13 @@ class Camera {
 		this.maxY = 10;
 	}
 	
+	fixAspectRatio() {
+		let aspect = this.display.width / this.display.height;
+		let curAspect = (this.maxX - this.minX) / (this.maxY - this.minY);
+		let zoom = Math.sqrt(aspect / curAspect);
+		this.zoomCentered(zoom, 1 / zoom);
+	}
+	
 	handleUp() {
 		this.dragState = false;
 	}
@@ -184,6 +192,15 @@ class Camera {
 			this.oldMX = event.x;
 			this.oldMY = event.y;
 		}
+	}
+	
+	zoomCentered(zx, zy) {
+		let mx = (this.minX + this.maxX) / 2;
+		let my = (this.minY + this.maxY) / 2;
+		this.minX = (this.minX - mx) * zx + mx;
+		this.maxX = (this.maxX - mx) * zx + mx;
+		this.minY = (this.minY - my) * zy + my;
+		this.maxY = (this.maxY - my) * zy + my;
 	}
 	
 	zoom(cx, cy, zx, zy) {
