@@ -18,19 +18,22 @@
 			<td class="w-100">
 				<textarea id="equation-content" rows="1" type="text" class="form-control"></textarea>
 			</td>
-			<td class="w-auto"><button id="equation-delete" class="nohover btn text-danger bi bi-x-lg" style="border: none !important;"></button></td>
+			<td class="w-auto"><button id="equation-delete" class="nohover btn text-danger bi bi-x-lg fs-5"></button></td>
 		</tr>
 	</template>
 	
 	<body style="overflow: hidden">
-		<div id="container">
+		<div id="container" class="bg-dark-subtle">
 			<div id="equation-container" class="border-end d-flex flex-column">
+				<div class="w-100 border-bottom border-3 bg-dark-subtle">
+					<button onclick="display.resetCamera()" class="bi bi-house btn text-info nohover fs-3 toolbar-button"></button>
+				</div>
 				<table id="equation-table" class="table align-middle table-sm">
 					<!-- Table does not generate a <tbody> unless it has something in it -->
 					<tr></tr>
 				</table>
 				<div onclick="equaTable.addEquation()" class="h-100">
-					<button class="nohover btn fs-3 text-primary bi-plus-lg position-relative start-50 translate-middle" style="border: none !important;"></button>
+					<button class="nohover btn fs-3 text-primary bi-plus-lg position-relative start-50 translate-middle"></button>
 				</div>
 			</div>
 			<div style="width: 100%; height: 100%;">

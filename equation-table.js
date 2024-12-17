@@ -66,6 +66,16 @@ class EquationTable {
 			equa.remove();
 			delete this.equations[equa.id];
 		};
+		let eqButton = equa.querySelector('#equation-button');
+		eqButton.onclick = () => {
+			if(this.equations[equa.id].isHidden) {
+				this.equations[equa.id].isHidden = false;
+				eqButton.className = eqButton.className.replace('opacity-25', '');
+			} else {
+				this.equations[equa.id].isHidden = true;
+				eqButton.className = eqButton.className + ' opacity-25';
+			}
+		};
 		let content = equa.querySelector('#equation-content');
 		content.oninput = (e) => {
 			let id = e.target.parentElement.parentElement.id;

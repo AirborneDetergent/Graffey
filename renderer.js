@@ -93,7 +93,7 @@ class Renderer {
 					button.className = button.className.replace('bi-exclamation-diamond', equa.icon);
 				}
 			}
-			if(equa.program !== null) {
+			if(equa.program !== null && !equa.isHidden) {
 				this.gl.useProgram(equa.program);
 				let uBounds = this.gl.getUniformLocation(equa.program, '_bounds');
 				let uResolution = this.gl.getUniformLocation(equa.program, '_resolution');

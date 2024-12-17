@@ -1,5 +1,10 @@
 .nohover {
 	background-color: transparent !important;
+	border: none !important;
+}
+
+.toolbar-button {
+	float: right !important;
 }
 
 #display {

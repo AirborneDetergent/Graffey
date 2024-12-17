@@ -30,6 +30,11 @@ class Display {
 		this.camera = new Camera(this);
 	}
 	
+	resetCamera() {
+		this.camera.reset();
+		this.camera.updateResized(this.height, this.width);
+	}
+	
 	updateCanvasSize(entry) {
 		let oldWidth = this.width;
 		this.width = entry.devicePixelContentBoxSize[0].inlineSize;
@@ -119,10 +124,7 @@ class Display {
 class Camera {
 	constructor(display) {
 		this.display = display;
-		this.minX = -10;
-		this.minY = -10;
-		this.maxX = 10;
-		this.maxY = 10;
+		this.reset();
 		this.dragState = false;
 		this.oldMX = 0;
 		this.oldMY = 0;
@@ -132,6 +134,13 @@ class Camera {
 		this.display.canvas.addEventListener('wheel', this.handleWheel.bind(this));
 		this.scaleCenterX = 0;
 		this.scaleCenterY = 0;
+	}
+	
+	reset() {
+		this.minX = -10;
+		this.minY = -10;
+		this.maxX = 10;
+		this.maxY = 10;
 	}
 	
 	handleUp() {
@@ -148,7 +157,6 @@ class Camera {
 		} else if(event.button == MOUSE_LEFT) {
 			this.dragState = DRAG_PAN;
 		}
-		
 	}
 	
 	handleDrag(event) {
