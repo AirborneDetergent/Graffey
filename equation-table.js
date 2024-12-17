@@ -5,6 +5,29 @@ class EquationTable {
 		this.equations = {};
 	}
 	
+	save() {
+		let name = prompt('Graph Name');
+		window.localStorage.setItem(name, JSON.stringify(this.equations));
+	}
+	
+	load() {
+		let name = prompt('Graph To Load');
+		if(name == null) return;
+		let json = window.localStorage.getItem(name);
+		if(!json) return;
+		for(let equa of this.table.children) {
+			if(equa.id == 'ignore') continue;
+			equa.remove();
+			delete this.equations[equa.id];
+		}
+		this.equations = JSON.parse(json);
+		for(let id in this.equations) {
+			let e = this.equations[id];
+			e.program = null;
+			this.addEquation(e.r, e.g, e.b, e.angle, e.content, id);
+		}
+	}
+	
 	newEquation(r, g, b) {
 		let equa = document.getElementById('equation').content.cloneNode(true);
 		let button = equa.getElementById('equation-button');
@@ -36,9 +59,7 @@ class EquationTable {
 				if(dists[i] > dists[angInd]) angInd = i;
 			}
 			angle = angInd / dists.length;
-			console.log(angle);
 			theta = angle * Math.PI * 2;
-			console.log(dists);
 		} else {
 			angle = Math.random();
 			theta = angle * Math.PI * 2;
@@ -55,12 +76,11 @@ class EquationTable {
 		return [r * 255, g * 255, b * 255, angle];
 	}
 	
-	addEquation() {
-		let [r, g, b, angle] = this.randomColor();
+	addEquation(r, g, b, angle, contentString, id) {
 		let equa = this.newEquation(r, g, b);
 		this.table.appendChild(equa);
 		equa = this.table.children[this.table.children.length - 1];
-		equa.id = `equation${this.nextId++}`;
+		equa.id = id;
 		let delButton = equa.querySelector('#equation-delete');
 		delButton.onclick = () => {
 			equa.remove();
@@ -77,13 +97,27 @@ class EquationTable {
 			}
 		};
 		let content = equa.querySelector('#equation-content');
+		content.value = contentString;
 		content.oninput = (e) => {
 			let id = e.target.parentElement.parentElement.id;
 			this.equations[id].content = e.target.value;
 			this.equations[id].isModified = true;
 		}
-		this.equations[equa.id] = {r, g, b, angle,
-			content: '', 
-			isModified: true};
+		if(!this.equations[equa.id]) this.equations[equa.id] = {};
+		let e = this.equations[equa.id];
+		e.r = r;
+		e.g = g;
+		e.b = b;
+		e.angle = angle;
+		e.content = contentString;
+		e.isModified = true;
+		if(e.isHidden) {
+			eqButton.className = eqButton.className + ' opacity-25';
+		}
+	}
+	
+	makeEquation() {
+		let [r, g, b, angle] = this.randomColor();
+		this.addEquation(r, g, b, angle, '', `equation${this.nextId++}`);
 	}
 }

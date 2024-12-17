@@ -26,13 +26,15 @@
 		<div id="container" class="bg-dark-subtle">
 			<div id="equation-container" class="border-end d-flex flex-column">
 				<div class="w-100 border-bottom border-3 bg-dark-subtle">
-					<button onclick="display.resetCamera()" class="bi bi-house btn text-info nohover fs-3 toolbar-button"></button>
+					<button onclick="display.resetCamera()" class="bi bi-house btn text-info nohover fs-3" style="float: right;"></button>
+					<button onclick="equaTable.save()" class="bi bi-floppy btn text-success nohover fs-3"></button>
+					<button onclick="equaTable.load()"class="bi bi-upload btn text-warning nohover fs-3"></button>
 				</div>
 				<table id="equation-table" class="table align-middle table-sm">
 					<!-- Table does not generate a <tbody> unless it has something in it -->
-					<tr></tr>
+					<tr id="ignore"></tr>
 				</table>
-				<div onclick="equaTable.addEquation()" class="h-100">
+				<div onclick="equaTable.makeEquation()" class="h-100">
 					<button class="nohover btn fs-3 text-primary bi-plus-lg position-relative start-50 translate-middle"></button>
 				</div>
 			</div>
@@ -56,6 +58,24 @@
 				return FUNCTION;
 			}
 			
+			uint _hash(uint x) {
+				x ^= x >> 16;
+				x *= 0x7feb352dU;
+				x ^= x >> 15;
+				x *= 0x846ca68bU;
+				x ^= x >> 16;
+				return x;
+			}
+			
+			vec2 _randOffset(inout uint rand) {
+				rand = _hash(rand);
+				vec2 off = vec2(
+					float(rand & 0xFFFFu) / 65536.0,
+					float((rand >> 16) & 0xFFFFu) / 65536.0
+				) - 0.5;
+				return off * 2.0;
+			}
+			
 			vec2 _pixToCoord(vec2 p) {
 				p /= _resolution;
 				return p * (_bounds.zw - _bounds.xy) + _bounds.xy;
@@ -63,24 +83,26 @@
 			
 			out vec4 _fragColor;
 			
+			const vec2[] offsets = vec2[](
+				vec2(0.0, 0.0),
+				vec2(0.0, 1.0),
+				vec2(1.0, 0.0),
+				vec2(0.0, -1.0),
+				vec2(-1.0, 0.0)
+			);
+			
 			void main() {
 				float neg = 0.0;
 				float pos = 0.0;
-				vec2[] offsets = vec2[](
-					vec2(0.0, 0.0),
-					vec2(0.0, 1.0),
-					vec2(1.0, 0.0),
-					vec2(0.0, -1.0),
-					vec2(-1.0, 0.0)
-				);
-				for(int i = 0; i < 5; i++) {
-					vec2 p = _pixToCoord(gl_FragCoord.xy + offsets[i]);
+				uint rand = uint(gl_FragCoord.x * 256.0 + gl_FragCoord.y);
+				for(int i = 0; i < 50; i++) {
+					vec2 p = _pixToCoord(gl_FragCoord.xy + _randOffset(rand));
 					float v = _func(p);
 					if(v < 0.0) neg += 1.0;
 					if(v >= 0.0) pos += 1.0;
 				}
-				float line = (neg * pos) / 3.0;
-				_fragColor = vec4(_color, line);
+				float line = (neg * pos) / 625.0;
+				_fragColor = vec4(_color, line * 1.5);
 			}
 		</script>
 		<script src="equation-table.js"></script>

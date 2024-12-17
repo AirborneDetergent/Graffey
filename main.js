@@ -32,7 +32,7 @@ function render() {
 }
 
 let equaTable = new EquationTable();
-equaTable.addEquation();
+equaTable.makeEquation();
 
 let display = new Display();
 

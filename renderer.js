@@ -83,7 +83,6 @@ class Renderer {
 				equa.isModified = false;
 				let wasNull = equa.program === null;
 				equa.program = this.makeShaderProgram(id, this.equaTable.equations[id].content);
-				console.log(id);
 				let button = document.getElementById(id).querySelector('#equation-button');
 				let space = button.className.indexOf(' ');
 				if(equa.program === null && !wasNull) {
