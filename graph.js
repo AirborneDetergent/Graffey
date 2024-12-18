@@ -147,8 +147,11 @@ class Camera {
 	fixAspectRatio() {
 		let aspect = this.display.width / this.display.height;
 		let curAspect = (this.maxX - this.minX) / (this.maxY - this.minY);
-		let zoom = Math.sqrt(aspect / curAspect);
-		this.zoomCentered(zoom, 1 / zoom);
+		if(curAspect < aspect) {
+			this.zoomCentered(aspect / curAspect, 1);
+		} else {
+			this.zoomCentered(1, curAspect / aspect);
+		}
 	}
 	
 	handleUp() {
