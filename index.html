@@ -50,11 +50,14 @@
 		<div id="perf-meter"></div>
 		
 		<script id="plot-shader" src="plot.frag" type="x-shader/x-fragment">#version 300 es
+			#line 54
 			precision highp float;
 
 			uniform vec2 _resolution;
 			uniform vec4 _bounds;
 			uniform vec3 _color;
+			
+			out vec4 _fragColor;
 			
 			float _func(vec2 _p) {
 				float x = _p.x;
@@ -77,15 +80,16 @@
 					float(rand & 0xFFFFu) / 65536.0,
 					float((rand >> 16) & 0xFFFFu) / 65536.0
 				) - 0.5;
-				return off * 2.0;
+				return off * 1.0;
 			}
 			
 			vec2 _pixToCoord(vec2 p) {
-				p /= _resolution;
-				return p * (_bounds.zw - _bounds.xy) + _bounds.xy;
+				return p / _resolution * (_bounds.zw - _bounds.xy) + _bounds.xy;
 			}
 			
-			out vec4 _fragColor;
+			vec2 _coordToPix(vec2 p) {
+				return (p - _bounds.xy) / (_bounds.zw - _bounds.xy) * _resolution;
+			}
 			
 			const vec2[] offsets = vec2[](
 				vec2(0.0, 0.0),
@@ -95,18 +99,62 @@
 				vec2(-1.0, 0.0)
 			);
 			
-			void main() {
+			float _gridSampleMethod(vec2 pix) {
 				float neg = 0.0;
 				float pos = 0.0;
-				uint rand = uint(gl_FragCoord.x * 256.0 + gl_FragCoord.y);
 				for(int i = 0; i < 5; i++) {
-					vec2 p = _pixToCoord(gl_FragCoord.xy + offsets[i]);
+					vec2 p = _pixToCoord(pix + offsets[i]);
 					float v = _func(p);
 					if(v < 0.0) neg += 1.0;
 					if(v >= 0.0) pos += 1.0;
 				}
-				float line = (neg * pos) / 6.0;
-				_fragColor = vec4(_color, line * 1.5);
+				return (neg * pos) / 4.5;
+			}
+			
+			vec2 numDeriv(vec2 p) {
+				vec2 e = 0.0001 * abs(p);
+				float dx = _func(p + vec2(e.x, 0.0)) - _func(p - vec2(e.x, 0.0));
+				float dy = _func(p + vec2(0.0, e.y)) - _func(p - vec2(0.0, e.y));
+				return vec2(dx, dy) / (2.0 * e);
+			}
+			
+			float _gradientDescentMethod(vec2 pix) {
+				uint rand = uint(gl_FragCoord.x) ^ (uint(gl_FragCoord.y) << 16);
+				vec2 p = _pixToCoord(pix + _randOffset(rand));
+				vec2 pixCoord = _pixToCoord(pix);
+				vec2 size = _bounds.zw - _bounds.xy;
+				float aspX = sqrt(size.x / size.y);
+				float aspY = 1.0 / aspX;
+				vec2 asp = vec2(aspX, aspY);
+				
+				float val = _func(p);
+				if(val == 0.0) return 1.0;
+				
+				float weight = abs(val);
+				float targDir = -sign(val);
+				for(int i = 0; i < 5; i++) {
+					vec2 grad = numDeriv(p);
+					p += (grad * asp * targDir);
+					vec2 pPix = _coordToPix(p);
+					vec2 rel = pPix - pix;
+					rel *= asp;
+					float d2 = rel.x * rel.x + rel.y * rel.y;
+					if(d2 > 1.0) {
+						float d = sqrt(d2);
+						rel /= d;
+						pPix = pix + rel;
+						p = _pixToCoord(pPix);
+					}
+					val = _func(p);
+					if(sign(val) == targDir) {
+						return 1.0;
+					}
+				}
+				return 0.0;
+			}
+			
+			void main() {
+				_fragColor = vec4(_color, _gridSampleMethod(gl_FragCoord.xy));
 			}
 		</script>
 		<script src="equation-table.js"></script>

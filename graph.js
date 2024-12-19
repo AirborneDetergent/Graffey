@@ -2,10 +2,6 @@ function toColor(gray) {
 	return `rgb(${gray}, ${gray}, ${gray})`;
 }
 
-function numDisplay(n, s) {
-	return n;
-}
-
 function clamp(n, min, max) {
 	return Math.min(Math.max(n, min), max);
 }
@@ -28,6 +24,17 @@ class Display {
 		let observer = new ResizeObserver((entries) => this.updateCanvasSize(entries[0]));
 		observer.observe(this.canvas);
 		this.camera = new Camera(this);
+		this.formatter = new Intl.NumberFormat(undefined, {
+			notation: 'scientific'
+		});
+	}
+	
+	numDisplay(n /** @type {Number} */) {
+		let a = Math.abs(n);
+		if(a >= 1e5 || a <= 1e-5) {
+			return this.formatter.format(n).replace('E', 'e');
+		}
+		return Math.round(n * 100000) / 100000;
 	}
 	
 	resetCamera() {
@@ -81,9 +88,9 @@ class Display {
 		this.ctx.beginPath();
 		let aspect = this.width / this.height;
 		let scaleX = (this.camera.maxX - this.camera.minX) / aspect;
-		scaleX = 2 ** Math.ceil(Math.log2(scaleX) - granularity);
+		scaleX = 2 ** Math.ceil(Math.log2(scaleX) - granularity + 0.5);
 		let scaleY = this.camera.maxY - this.camera.minY;
-		scaleY = 2 ** Math.ceil(Math.log2(scaleY) - granularity);
+		scaleY = 2 ** Math.ceil(Math.log2(scaleY) - granularity + 0.5);
 		for(let i = Math.round(this.camera.minX / scaleX) * scaleX; i <= Math.round(this.camera.maxX / scaleX) * scaleX; i+= scaleX) {
 			this.ctx.moveTo(this.camera.ssx(i), 0);
 			this.ctx.lineTo(this.camera.ssx(i), this.height + 1);
@@ -96,7 +103,7 @@ class Display {
 		if(numbers) {
 			this.ctx.textBaseline = 'middle';
 			this.ctx.textAlign = 'center';
-			this.ctx.font = '20px arial';
+			this.ctx.font = '16px arial';
 			this.ctx.fillStyle = 'white';
 			this.ctx.strokeStyle = 'black';
 			this.ctx.lineWidth = 5;
@@ -104,14 +111,14 @@ class Display {
 				if(i == 0) continue;
 				let x = this.camera.ssx(i);
 				let y = clamp(this.camera.ssy(0) + 12, 12, this.height - 9);
-				let disp = numDisplay(i, scaleX);
+				let disp = this.numDisplay(i);
 				this.ctx.strokeText(disp, x, y);
 				this.ctx.fillText(disp, x, y);
 			}
 			this.ctx.textAlign = 'right';
 			for(let i = Math.round(this.camera.minY / scaleY) * scaleY; i <= Math.round(this.camera.maxY / scaleY) * scaleY; i+= scaleY) {
 				if(i == 0) continue;
-				let disp = numDisplay(i, scaleY);
+				let disp = this.numDisplay(i);
 				let x = clamp(this.camera.ssx(0) - 2, 2 + this.ctx.measureText(disp).width, this.width - 2);
 				let y = this.camera.ssy(i);
 				this.ctx.strokeText(disp, x, y);
