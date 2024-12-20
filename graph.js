@@ -38,8 +38,8 @@ class Display {
 	}
 	
 	resetCamera() {
-		this.camera.reset();
-		this.camera.updateResized(this.height, this.width);
+		this.camera.reset(false);
+		this.camera.updateResized(this.height, this.width, false);
 	}
 	
 	updateCanvasSize(entry) {
@@ -75,7 +75,7 @@ class Display {
 			this.drawGrid(8 - i, i == shades.length - 1);
 		}
 		this.ctx.strokeStyle = toColor(255);
-		this.ctx.lineWidth = 2;
+		this.ctx.lineWidth = 4;
 		this.ctx.beginPath();
 		this.ctx.moveTo(this.camera.ssx(0), 0);
 		this.ctx.lineTo(this.camera.ssx(0), this.height + 1);
@@ -85,7 +85,7 @@ class Display {
 		this.ctx.translate(-0.5, -0.5);
 	}
 	
-	drawGrid(granularity, numbers = false) {
+	drawGrid(granularity, shouldNumbers = false) {
 		this.ctx.beginPath();
 		let aspect = this.width / this.height;
 		let scaleX = (this.camera.maxX - this.camera.minX) / aspect;
@@ -103,7 +103,7 @@ class Display {
 			this.ctx.lineTo(this.width + 1, this.camera.ssy(i));
 		}
 		this.ctx.stroke();
-		if(numbers) {
+		if(shouldNumbers) {
 			this.ctx.textBaseline = 'middle';
 			this.ctx.textAlign = 'center';
 			this.ctx.font = '16px arial';
@@ -124,7 +124,7 @@ class Display {
 				if(i == 0) continue;
 				if(i + scaleY == i) break;
 				let disp = this.numDisplay(i);
-				let x = clamp(this.camera.ssx(0) - 2, 2 + this.ctx.measureText(disp).width, this.width - 2);
+				let x = clamp(this.camera.ssx(0) - 4, 4 + this.ctx.measureText(disp).width, this.width - 4);
 				let y = this.camera.ssy(i);
 				this.ctx.strokeText(disp, x, y);
 				this.ctx.fillText(disp, x, y);
@@ -149,15 +149,17 @@ class Camera {
 		this.scaleCenterY = 0;
 	}
 	
-	reset() {
-		this.minX = -10;
-		this.minY = -10;
-		this.maxX = 10;
-		this.maxY = 10;
-		this.tarMinX = this.minX;
-		this.tarMinY = this.minY;
-		this.tarMaxX = this.maxX;
-		this.tarMaxY = this.maxY;
+	reset(isInstant = true) {
+		this.tarMinX = -10;
+		this.tarMinY = -10;
+		this.tarMaxX = 10;
+		this.tarMaxY = 10;
+		if(isInstant) {
+			this.minX = this.tarMinX;
+			this.minY = this.tarMinY;
+			this.maxX = this.tarMaxX;
+			this.maxY = this.tarMaxY;
+		}
 	}
 	
 	updateSmoothZoom(dt) {
@@ -221,6 +223,10 @@ class Camera {
 						dy = 0;
 					}
 					this.zoom(this.scaleCenterX, this.scaleCenterY, 256 ** dx, 256 ** dy);
+					this.minX = this.tarMinX;
+					this.minY = this.tarMinY;
+					this.maxX = this.tarMaxX;
+					this.maxY = this.tarMaxY;
 					break;
 			}
 			this.oldMX = event.x;
@@ -253,13 +259,15 @@ class Camera {
 		this.zoom(event.x, event.y, ratio, ratio);
 	}
 	
-	updateResized(oldWidth, width) {
+	updateResized(oldWidth, width, isInstant = true) {
 		let ratio = oldWidth / width;
 		let mid = (this.tarMaxX + this.tarMinX) / 2;
 		this.tarMinX = (this.tarMinX - mid) / ratio + mid;
 		this.tarMaxX = (this.tarMaxX - mid) / ratio + mid;
-		this.minX = this.tarMinX;
-		this.maxX = this.tarMaxX;
+		if(isInstant) {
+			this.minX = this.tarMinX;
+			this.maxX = this.tarMaxX;
+		}
 	}
 	
 	ssRemap(dim, min, max, p) {

@@ -116,7 +116,7 @@
 					return vec4(1.0);
 				}
 				vec3 col = (val > 0.0) ? _color : _invColor;
-				return vec4(mix(vec3(0.73), col, min(1.0, abs(val))), 0.5);
+				return vec4(mix(vec3(0.73), col, min(1.0, abs(val))), 0.333);
 			}
 			
 			void main() {
