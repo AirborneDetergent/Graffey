@@ -21,7 +21,6 @@ class EquationTable {
 			preExisting = true;
 		}
 		let angle;
-		let theta;
 		if(preExisting) {
 			for(let i = 0; i < dists.length * 2; i++) {
 				let wave = dists[(i - 1 + dists.length * 2) % dists.length] + 1;
@@ -36,11 +35,14 @@ class EquationTable {
 				if(dists[i] > dists[angInd]) angInd = i;
 			}
 			angle = angInd / dists.length;
-			theta = angle * Math.PI * 2;
 		} else {
 			angle = Math.random();
-			theta = angle * Math.PI * 2;
 		}
+		let [r, g, b] = this.colorFromTheta(angle * Math.PI * 2);
+		return [r, g, b, angle];
+	}
+	
+	colorFromTheta(theta) {
 		let A = Math.cos(theta) / Math.sqrt(2) * 0.61;
 		let B = Math.sin(theta) / Math.sqrt(6) * 0.61;
 		let r = 0.5 - B + A;
@@ -50,10 +52,10 @@ class EquationTable {
 		r = r ** e;
 		g = g ** e;
 		b = b ** e;
-		return [r * 255, g * 255, b * 255, angle];
+		return [r * 255, g * 255, b * 255];
 	}
 	
-	addEquation(r, g, b, angle, contentString, id) {
+	addEquation(r, g, b, ir, ig, ib, angle, contentString, id) {
 		let equa = this.newEquation(r, g, b);
 		this.table.appendChild(equa);
 		equa = this.table.children[this.table.children.length - 1];
@@ -85,6 +87,9 @@ class EquationTable {
 		e.r = r;
 		e.g = g;
 		e.b = b;
+		e.ir = ir;
+		e.ig = ig;
+		e.ib = ib;
 		e.angle = angle;
 		e.content = contentString;
 		e.isModified = true;
@@ -95,6 +100,7 @@ class EquationTable {
 	
 	makeEquation() {
 		let [r, g, b, angle] = this.randomColor();
-		this.addEquation(r, g, b, angle, '', `equation${this.nextId++}`);
+		let [ir, ig, ib] = this.colorFromTheta((angle + 1/3) * Math.PI * 2);
+		this.addEquation(r, g, b, ir, ig, ib, angle, '', `equation${this.nextId++}`);
 	}
 }

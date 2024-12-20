@@ -1,0 +1,59 @@
+uint _hash(uint x) {
+	x ^= x >> 16;
+	x *= 0x7feb352dU;
+	x ^= x >> 15;
+	x *= 0x846ca68bU;
+	x ^= x >> 16;
+	return x;
+}
+
+vec2 _randOffset(inout uint rand) {
+	rand = _hash(rand);
+	vec2 off = vec2(
+		float(rand & 0xFFFFu) / 65536.0,
+		float((rand >> 16) & 0xFFFFu) / 65536.0
+	) - 0.5;
+	return off * 1.0;
+}
+
+vec2 numDeriv(vec2 p) {
+	vec2 e = 0.0001 * abs(p);
+	float dx = _func(p + vec2(e.x, 0.0)) - _func(p - vec2(e.x, 0.0));
+	float dy = _func(p + vec2(0.0, e.y)) - _func(p - vec2(0.0, e.y));
+	return vec2(dx, dy) / (2.0 * e);
+}
+
+float _gradientDescentMethod(vec2 pix) {
+	uint rand = uint(gl_FragCoord.x) ^ (uint(gl_FragCoord.y) << 16);
+	vec2 p = _pixToCoord(pix + _randOffset(rand));
+	vec2 pixCoord = _pixToCoord(pix);
+	vec2 size = _bounds.zw - _bounds.xy;
+	float aspX = sqrt(size.x / size.y);
+	float aspY = 1.0 / aspX;
+	vec2 asp = vec2(aspX, aspY);
+	
+	float val = _func(p);
+	if(val == 0.0) return 1.0;
+	
+	float weight = abs(val);
+	float targDir = -sign(val);
+	for(int i = 0; i < 5; i++) {
+		vec2 grad = numDeriv(p);
+		p += (grad * asp * targDir);
+		vec2 pPix = _coordToPix(p);
+		vec2 rel = pPix - pix;
+		rel *= asp;
+		float d2 = rel.x * rel.x + rel.y * rel.y;
+		if(d2 > 1.0) {
+			float d = sqrt(d2);
+			rel /= d;
+			pPix = pix + rel;
+			p = _pixToCoord(pPix);
+		}
+		val = _func(p);
+		if(sign(val) == targDir) {
+			return 1.0;
+		}
+	}
+	return 0.0;
+}

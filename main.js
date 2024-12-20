@@ -80,7 +80,7 @@ function load() {
 	for(let id in equaTable.equations) {
 		let e = equaTable.equations[id];
 		e.program = null;
-		equaTable.addEquation(e.r, e.g, e.b, e.angle, e.content, id);
+		equaTable.addEquation(e.r, e.g, e.b, e.ir, e.ig, e.ib, e.angle, e.content, id);
 	}
 	display.camera.minX = data.minX;
 	display.camera.maxX = data.maxX;

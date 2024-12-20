@@ -66,7 +66,7 @@ class Display {
 	
 	drawGraphBackground() {
 		const shades = [8, 16, 32, 64, 128];
-		this.ctx.translate(-0.5, -0.5);
+		this.ctx.translate(0.5, 0.5);
 		// max 5
 		const GRID_COUNT = 3;
 		for(let i = shades.length - GRID_COUNT; i < shades.length; i++) {
@@ -82,7 +82,7 @@ class Display {
 		this.ctx.moveTo(0, this.camera.ssy(0));
 		this.ctx.lineTo(this.width + 1, this.camera.ssy(0));
 		this.ctx.stroke();
-		this.ctx.translate(0.5, 0.5);
+		this.ctx.translate(-0.5, -0.5);
 	}
 	
 	drawGrid(granularity, numbers = false) {
