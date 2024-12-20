@@ -55,9 +55,10 @@ class Display {
 		this.hasResized = true;
 	}
 	
-	render() {
+	render(dt) {
 		this.canvas.width = this.width;
 		this.canvas.height = this.height;
+		this.camera.updateSmoothZoom(dt);
 		this.ctx.fillStyle = toColor(0);
 		this.ctx.fillRect(0, 0, this.width, this.height);
 		this.drawGraphBackground();
@@ -88,14 +89,16 @@ class Display {
 		this.ctx.beginPath();
 		let aspect = this.width / this.height;
 		let scaleX = (this.camera.maxX - this.camera.minX) / aspect;
-		scaleX = 2 ** Math.ceil(Math.log2(scaleX) - granularity + 0.5);
 		let scaleY = this.camera.maxY - this.camera.minY;
+		scaleX = 2 ** Math.ceil(Math.log2(scaleX) - granularity + 0.5);
 		scaleY = 2 ** Math.ceil(Math.log2(scaleY) - granularity + 0.5);
 		for(let i = Math.round(this.camera.minX / scaleX) * scaleX; i <= Math.round(this.camera.maxX / scaleX) * scaleX; i+= scaleX) {
+			if(i + scaleX == i) break;
 			this.ctx.moveTo(this.camera.ssx(i), 0);
 			this.ctx.lineTo(this.camera.ssx(i), this.height + 1);
 		}
 		for(let i = Math.round(this.camera.minY / scaleY) * scaleY; i <= Math.round(this.camera.maxY / scaleY) * scaleY; i+= scaleY) {
+			if(i + scaleY == i) break;
 			this.ctx.moveTo(0, this.camera.ssy(i));
 			this.ctx.lineTo(this.width + 1, this.camera.ssy(i));
 		}
@@ -109,6 +112,7 @@ class Display {
 			this.ctx.lineWidth = 5;
 			for(let i = Math.round(this.camera.minX / scaleX) * scaleX; i <= Math.round(this.camera.maxX / scaleX) * scaleX; i+= scaleX) {
 				if(i == 0) continue;
+				if(i + scaleX == i) break;
 				let x = this.camera.ssx(i);
 				let y = clamp(this.camera.ssy(0) + 12, 12, this.height - 9);
 				let disp = this.numDisplay(i);
@@ -118,6 +122,7 @@ class Display {
 			this.ctx.textAlign = 'right';
 			for(let i = Math.round(this.camera.minY / scaleY) * scaleY; i <= Math.round(this.camera.maxY / scaleY) * scaleY; i+= scaleY) {
 				if(i == 0) continue;
+				if(i + scaleY == i) break;
 				let disp = this.numDisplay(i);
 				let x = clamp(this.camera.ssx(0) - 2, 2 + this.ctx.measureText(disp).width, this.width - 2);
 				let y = this.camera.ssy(i);
@@ -149,11 +154,24 @@ class Camera {
 		this.minY = -10;
 		this.maxX = 10;
 		this.maxY = 10;
+		this.tarMinX = this.minX;
+		this.tarMinY = this.minY;
+		this.tarMaxX = this.maxX;
+		this.tarMaxY = this.maxY;
+	}
+	
+	updateSmoothZoom(dt) {
+		let w1 = 0.1 ** (dt * 10);
+		let w2 = 1 - w1;
+		this.minX = this.minX * w1 + this.tarMinX * w2;
+		this.minY = this.minY * w1 + this.tarMinY * w2;
+		this.maxX = this.maxX * w1 + this.tarMaxX * w2;
+		this.maxY = this.maxY * w1 + this.tarMaxY * w2;
 	}
 	
 	fixAspectRatio() {
 		let aspect = this.display.width / this.display.height;
-		let curAspect = (this.maxX - this.minX) / (this.maxY - this.minY);
+		let curAspect = (this.tarMaxX - this.tarMinX) / (this.tarMaxY - this.tarMinY);
 		if(curAspect < aspect) {
 			this.zoomCentered(aspect / curAspect, 1);
 		} else {
@@ -181,14 +199,20 @@ class Camera {
 		if(this.dragState) {
 			let dx = (this.oldMX - event.x) * window.devicePixelRatio / this.display.width;
 			let dy = -((this.oldMY - event.y) * window.devicePixelRatio / this.display.height);
-			let sx = this.maxX - this.minX;
-			let sy = this.maxY - this.minY;
+			let sx = this.tarMaxX - this.tarMinX;
+			let sy = this.tarMaxY - this.tarMinY;
 			switch(this.dragState) {
 				case DRAG_PAN:
-					this.minX += dx * sx;
-					this.maxX += dx * sx;
-					this.minY += dy * sy;
-					this.maxY += dy * sy;
+					let ax = dx * sx;
+					let ay = dy * sy;
+					this.tarMinX += ax;
+					this.tarMaxX += ax;
+					this.tarMinY += ay;
+					this.tarMaxY += ay;
+					this.minX += ax;
+					this.maxX += ax;
+					this.minY += ay;
+					this.maxY += ay;
 					break;
 				case DRAG_SCALE:
 					if(Math.abs(event.x - this.scaleCenterX) < Math.abs(event.y - this.scaleCenterY)) {
@@ -205,35 +229,37 @@ class Camera {
 	}
 	
 	zoomCentered(zx, zy) {
-		let mx = (this.minX + this.maxX) / 2;
-		let my = (this.minY + this.maxY) / 2;
-		this.minX = (this.minX - mx) * zx + mx;
-		this.maxX = (this.maxX - mx) * zx + mx;
-		this.minY = (this.minY - my) * zy + my;
-		this.maxY = (this.maxY - my) * zy + my;
+		let mx = (this.tarMinX + this.tarMaxX) / 2;
+		let my = (this.tarMinY + this.tarMaxY) / 2;
+		this.tarMinX = (this.tarMinX - mx) * zx + mx;
+		this.tarMaxX = (this.tarMaxX - mx) * zx + mx;
+		this.tarMinY = (this.tarMinY - my) * zy + my;
+		this.tarMaxY = (this.tarMaxY - my) * zy + my;
 	}
 	
 	zoom(cx, cy, zx, zy) {
 		let mx = (cx - this.display.canvas.offsetLeft) * window.devicePixelRatio / this.display.width;
 		let my = 1 - (cy - this.display.canvas.offsetTop) * window.devicePixelRatio / this.display.height;
-		mx = mx * (this.maxX - this.minX) + this.minX;
-		my = my * (this.maxY - this.minY) + this.minY;
-		this.minX = (this.minX - mx) * zx + mx;
-		this.maxX = (this.maxX - mx) * zx + mx;
-		this.minY = (this.minY - my) * zy + my;
-		this.maxY = (this.maxY - my) * zy + my;
+		mx = mx * (this.tarMaxX - this.tarMinX) + this.tarMinX;
+		my = my * (this.tarMaxY - this.tarMinY) + this.tarMinY;
+		this.tarMinX = (this.tarMinX - mx) * zx + mx;
+		this.tarMaxX = (this.tarMaxX - mx) * zx + mx;
+		this.tarMinY = (this.tarMinY - my) * zy + my;
+		this.tarMaxY = (this.tarMaxY - my) * zy + my;
 	}
 	
 	handleWheel(event) {
-		let ratio = 1.15 ** (event.deltaY / 100);
+		let ratio = 1.5 ** (event.deltaY / 100);
 		this.zoom(event.x, event.y, ratio, ratio);
 	}
 	
 	updateResized(oldWidth, width) {
 		let ratio = oldWidth / width;
-		let mid = (this.maxX + this.minX) / 2;
-		this.minX = (this.minX - mid) / ratio + mid;
-		this.maxX = (this.maxX - mid) / ratio + mid;
+		let mid = (this.tarMaxX + this.tarMinX) / 2;
+		this.tarMinX = (this.tarMinX - mid) / ratio + mid;
+		this.tarMaxX = (this.tarMaxX - mid) / ratio + mid;
+		this.minX = this.tarMinX;
+		this.maxX = this.tarMaxX;
 	}
 	
 	ssRemap(dim, min, max, p) {

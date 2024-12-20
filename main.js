@@ -21,6 +21,7 @@ class PerfMeter {
 			this.peak = 0;
 		}
 		this.frameCount++;
+		return elapsed;
 	}
 }
 
@@ -88,9 +89,9 @@ function load() {
 }
 
 function render() {
-	perfMeter.tick();
-	display.render();
-	renderer.render();
+	let dt = perfMeter.tick() / 1000;
+	display.render(dt);
+	renderer.render(dt);
 	requestAnimationFrame(render);
 }
 

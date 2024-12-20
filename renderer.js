@@ -69,7 +69,7 @@ class Renderer {
 		return program;
 	}
 	
-	render() {
+	render(dt) {
 		this.glCanvas.width = this.display.width;
 		this.glCanvas.height = this.display.height;
 		this.glCanvas.style.width = this.display.canvas.offsetWidth + 'px';
@@ -88,7 +88,7 @@ class Renderer {
 				if(equa.program === null && !wasNull) {
 					equa.icon = button.className.substring(0, space);
 					button.className = button.className.replace(equa.icon, 'bi-exclamation-diamond')
-				} else if(wasNull) {
+				} else if(wasNull && equa.program !== null) {
 					button.className = button.className.replace('bi-exclamation-diamond', equa.icon);
 				}
 			}
