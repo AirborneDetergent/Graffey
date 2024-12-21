@@ -138,19 +138,20 @@
 			
 			vec4 _valuePlotMethod(vec2 pix) {
 				vec2 off;
-				vec3 color = vec3(0.0);
+				vec4 color = vec4(0.0);
 				int count = 0;
 				for(off.x = -0.5; off.x <= 0.5; off.x += 0.25) {
 					for(off.y = -0.5; off.y <= 0.5; off.y += 0.25) {
 						vec2 pixOff = pix + off * 0.9;
 						float val = _func(_pixToCoord(pixOff));
 						vec3 col = (val > 0.0) ? _color : _invColor;
+						float alpha = 0.5;
 						col = mix(vec3(0.0), col, tanh(abs(val/2.0)));
 						if(_gridSampleIsolines(pixOff, _func(_pixToCoord(pixOff)))) {
-							//col = vec3(mix(vec3(1.0), col, 0.25));
-							col = vec3(1.0);
+							col = vec3(mix(vec3(1.0), col, 0.2));
+							alpha = 0.9;
 						}
-						color += col;
+						color += vec4(col, alpha);
 						count++;
 					}
 				}
@@ -158,7 +159,7 @@
 				if(_gridSampleIsolines(pix, _func(_pixToCoord(pix)))) {
 					//return vec4(mix(vec3(1.0), color, 0.25), 0.8);
 				}
-				return vec4(color, 0.5);
+				return color;
 			}
 			
 			void main() {
