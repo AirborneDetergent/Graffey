@@ -75,13 +75,20 @@ function load() {
 		equa.remove();
 		delete equaTable.equations[equa.id];
 	}
+	equaTable.nextId = 0;
 	let data = JSON.parse(json);
 	equaTable.equations = data.equations;
 	for(let id in equaTable.equations) {
+		let idInt = Number(id.replace('equation', ''));
+		equation.nextId = Math.max(idInt, equation.nextId);
 		let e = equaTable.equations[id];
 		e.program = null;
 		equaTable.addEquation(e.r, e.g, e.b, e.ir, e.ig, e.ib, e.angle, e.content, id);
 	}
+	display.camera.tarMinX = data.minX;
+	display.camera.tarMaxX = data.maxX;
+	display.camera.tarMinY = data.minY;
+	display.camera.tarMaxY = data.maxY;
 	display.camera.minX = data.minX;
 	display.camera.maxX = data.maxX;
 	display.camera.minY = data.minY;
