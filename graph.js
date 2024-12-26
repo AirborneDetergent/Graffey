@@ -255,7 +255,7 @@ class Camera {
 	}
 	
 	handleWheel(event) {
-		let ratio = 1.5 ** (event.deltaY / 100);
+		let ratio = 1.3 ** (event.deltaY / 100);
 		this.zoom(event.x, event.y, ratio, ratio);
 	}
 	

@@ -24,7 +24,7 @@ class Compiler {
 	}
 	
 	floatifyInts(/** @type {String} */equa) {
-		return equa.replaceAll(/[\d\.]+/g, (num) => {
+		return equa.replaceAll(/(?<!\w)[\d\.]+/g, (num) => {
 			if(num.match(/\d/) && !num.match(/[a-zA-Z]/) && num.indexOf('.') == -1){
 				return `${num}.0`;
 			}

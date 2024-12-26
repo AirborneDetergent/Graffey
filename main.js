@@ -80,11 +80,12 @@ function load() {
 	equaTable.equations = data.equations;
 	for(let id in equaTable.equations) {
 		let idInt = Number(id.replace('equation', ''));
-		equation.nextId = Math.max(idInt, equation.nextId);
+		equaTable.nextId = Math.max(idInt, equaTable.nextId);
 		let e = equaTable.equations[id];
 		e.program = null;
 		equaTable.addEquation(e.r, e.g, e.b, e.ir, e.ig, e.ib, e.angle, e.content, id);
 	}
+	equaTable.nextId++;
 	display.camera.tarMinX = data.minX;
 	display.camera.tarMaxX = data.maxX;
 	display.camera.tarMinY = data.minY;

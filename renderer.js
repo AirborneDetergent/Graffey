@@ -110,13 +110,15 @@ class Renderer {
 	renderEquation(equa) {
 		this.gl.useProgram(equa.program);
 		let uBounds = this.gl.getUniformLocation(equa.program, '_bounds');
-		let uResolution = this.gl.getUniformLocation(equa.program, '_resolution');
-		let uColor = this.gl.getUniformLocation(equa.program, '_color');
-		let uInvColor = this.gl.getUniformLocation(equa.program, '_invColor');
 		this.gl.uniform4f(uBounds, this.display.camera.minX, this.display.camera.minY, this.display.camera.maxX, this.display.camera.maxY);
+		let uResolution = this.gl.getUniformLocation(equa.program, '_resolution');
 		this.gl.uniform2f(uResolution, this.display.width, this.display.height);
+		let uColor = this.gl.getUniformLocation(equa.program, '_color');
 		this.gl.uniform3f(uColor, equa.r / 255, equa.g / 255, equa.b / 255);
+		let uInvColor = this.gl.getUniformLocation(equa.program, '_invColor');
 		this.gl.uniform3f(uInvColor, equa.ir / 255, equa.ig / 255, equa.ib / 255);
+		let uSuperSampleDim = this.gl.getUniformLocation(equa.program, '_superSampleDim');
+		this.gl.uniform1f(uSuperSampleDim, 0);
 		this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 	}
 }
