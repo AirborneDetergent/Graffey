@@ -10,6 +10,7 @@ class Renderer {
 		this.gl = this.glCanvas.getContext('webgl2', {
 			antialias: false,
 		});
+		this.superSampleDim = 1;
 		
 		this.gl.enable(this.gl.BLEND);
 		this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
@@ -118,7 +119,7 @@ class Renderer {
 		let uInvColor = this.gl.getUniformLocation(equa.program, '_invColor');
 		this.gl.uniform3f(uInvColor, equa.ir / 255, equa.ig / 255, equa.ib / 255);
 		let uSuperSampleDim = this.gl.getUniformLocation(equa.program, '_superSampleDim');
-		this.gl.uniform1f(uSuperSampleDim, 0);
+		this.gl.uniform1f(uSuperSampleDim, this.superSampleDim);
 		this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 	}
 }

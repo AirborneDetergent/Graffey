@@ -91,7 +91,6 @@
 				float high = 1.0;
 				float guess = 0.5;
 				float vGuess;
-				//vMag = min(vMag, 1.0);
 				for(int i = 0; i < 10; i++) {
 					vec2 p = mix(p1, p2, guess);
 					vGuess = _func(p);
@@ -108,24 +107,47 @@
 				return abs(vGuess) <= vMag;
 			}
 			
-			vec4 _gridSampleMethod(vec2 pix) {
-				float neg = 0.0;
-				float pos = 0.0;
+			vec4 gridSample(vec2 pix) {
 				vec2 pixCoord = _pixToCoord(pix);
 				float cv = _func(pixCoord);
 				float cs = sign(cv);
-				for(int i = 0; i < 8; i++) {
-					vec2 p = _pixToCoord(pix + offsets[i]);
-					float v = _func(p);
-					float s = sign(v);
-					if(s != sign(cs) && testZero(pixCoord, p, cs, s, (abs(cv) + abs(v)) / 2.0)) {
-						return vec4(_color, 1.0);
+				vec2 p;
+				float s, v;
+				int i;
+				for(i = 0; i < 8; i++) {
+					p = _pixToCoord(pix + offsets[i]);
+					v = _func(p);
+					s = sign(v);
+					if(s != sign(cs)) {
+						break;
 					}
+				}
+				if(i != 8 && testZero(pixCoord, p, cs, s, (abs(cv) + abs(v)) / 2.0)) {
+					return vec4(_color, 1.0);
 				}
 				return vec4(0.0);
 			}
 			
+			vec4 _gridSampleMethod(vec2 pix) {
+				if(_superSampleDim == 1.0) {
+					return gridSample(pix);
+				}
+				vec2 off;
+				vec4 color = vec4(0.0);
+				int count = 0;
+				for(off.x = -0.5; off.x <= 0.5; off.x += 1.0 / (_superSampleDim - 1.0)) {
+					for(off.y = -0.5; off.y <= 0.5; off.y += 1.0 / (_superSampleDim - 1.0)) {
+						vec2 pixOff = pix + off * 0.9;
+						vec4 col = gridSample(pixOff);
+						color += col;
+						count++;
+					}
+				}
+				return color / float(count);
+			}
+			
 			float isoRound(float v) {
+				v = sign(v) * log2(abs(v) + 1.0);
 				if(v == 0.0) return 1.0;
 				return (v > 0.0) ? ceil(v) : floor(v);
 			}
@@ -153,14 +175,14 @@
 			}
 			
 			vec4 _valuePlotMethod(vec2 pix) {
-				if(_superSampleDim == 0.0) {
+				if(_superSampleDim == 1.0) {
 					return valuePlotSample(pix);
 				}
 				vec2 off;
 				vec4 color = vec4(0.0);
 				int count = 0;
-				for(off.x = -0.5; off.x <= 0.5; off.x += 1.0 / _superSampleDim) {
-					for(off.y = -0.5; off.y <= 0.5; off.y += 1.0 / _superSampleDim) {
+				for(off.x = -0.5; off.x <= 0.5; off.x += 1.0 / (_superSampleDim - 1.0)) {
+					for(off.y = -0.5; off.y <= 0.5; off.y += 1.0 / (_superSampleDim - 1.0)) {
 						vec2 pixOff = pix + off * 0.9;
 						vec4 col = valuePlotSample(pixOff);
 						color += col;

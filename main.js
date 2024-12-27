@@ -7,7 +7,7 @@ class PerfMeter {
 		this.peak = 0;
 	}
 	
-	tick() {
+	tick(renderer) {
 		let now = Date.now();
 		let elapsed = now - this.lastTick;
 		this.lastTick = now;
@@ -16,7 +16,7 @@ class PerfMeter {
 		if(sinceUpdate >= 1000) {
 			let fps = this.frameCount / sinceUpdate * 1000;
 			this.lastUpdate = now;
-			this.element.textContent = `${fps.toFixed(2)} FPS\r\n${this.peak}ms peak`;
+			this.element.textContent = `${fps.toFixed(2)} FPS\r\n${this.peak}ms peak\r\n${renderer.superSampleDim}^2 samples`;
 			this.frameCount = 0;
 			this.peak = 0;
 		}
@@ -97,7 +97,7 @@ function load() {
 }
 
 function render() {
-	let dt = perfMeter.tick() / 1000;
+	let dt = perfMeter.tick(renderer) / 1000;
 	display.render(dt);
 	renderer.render(dt);
 	requestAnimationFrame(render);
