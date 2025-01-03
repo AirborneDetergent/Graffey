@@ -104,12 +104,15 @@
 					}
 					guess = (low + high) / 2.0;
 				}
-				return abs(vGuess) <= vMag;
+				return abs(vGuess) < vMag;
 			}
 			
 			vec4 gridSample(vec2 pix) {
 				vec2 pixCoord = _pixToCoord(pix);
 				float cv = _func(pixCoord);
+				if(cv == 0.0) {
+					return vec4(_color, 1.0);
+				}
 				float cs = sign(cv);
 				vec2 p;
 				float s, v;
@@ -118,11 +121,11 @@
 					p = _pixToCoord(pix + offsets[i]);
 					v = _func(p);
 					s = sign(v);
-					if(s != sign(cs)) {
+					if(s != cs) {
 						break;
 					}
 				}
-				if(i != 8 && testZero(pixCoord, p, cs, s, (abs(cv) + abs(v)) / 2.0)) {
+				if(i != 8 && testZero(pixCoord, p, cs, s, abs(cv - v))) {
 					return vec4(_color, 1.0);
 				}
 				return vec4(0.0);
@@ -147,7 +150,7 @@
 			}
 			
 			float isoRound(float v) {
-				v = sign(v) * log2(abs(v) + 1.0);
+				v = sign(v) * log2(max(0.5, abs(v)));
 				if(v == 0.0) return 1.0;
 				return (v > 0.0) ? ceil(v) : floor(v);
 			}
@@ -165,7 +168,7 @@
 			vec4 valuePlotSample(vec2 pix) {
 				float val = _func(_pixToCoord(pix));
 				vec3 col = (val > 0.0) ? _color : _invColor;
-				float alpha = 0.5;
+				float alpha = 0.7;
 				col = mix(vec3(0.0), col, tanh(abs(val/2.0)));
 				if(_gridSampleIsolines(pix, _func(_pixToCoord(pix)))) {
 					col = vec3(mix(vec3(1.0), col, 0.2));
@@ -189,7 +192,8 @@
 						count++;
 					}
 				}
-				return color / float(count);
+				color /= float(count);
+				return color;
 			}
 			
 			void main() {
