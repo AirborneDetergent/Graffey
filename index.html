@@ -18,7 +18,7 @@
 			<td class="w-100">
 				<textarea id="equation-content" rows="2" type="text" class="form-control" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
 			</td>
-			<td class="w-auto"><button id="equation-delete" class="nohover btn text-danger bi bi-x-lg fs-5"></button></td>
+			<td class="w-auto"><button title="Delete Equation" id="equation-delete" class="nohover btn text-danger bi bi-x-lg fs-5"></button></td>
 		</tr>
 	</template>
 	
@@ -26,18 +26,18 @@
 		<div id="container" class="bg-dark-subtle">
 			<div id="toolbar-equation-container">
 				<div class="w-100 border-bottom border-3 bg-dark-subtle">
-					<button onclick="display.resetCamera()" class="bi bi-house btn text-info nohover fs-3" style="float: right;"></button>
-					<button onclick="display.camera.fixAspectRatio()" class="bi bi-aspect-ratio btn text-success nohover fs-3" style="float: right;"></button>
-					<button onclick="save()" class="bi bi-floppy btn text-primary-emphasis nohover fs-3"></button>
-					<button onclick="load()" class="bi bi-upload btn text-warning nohover fs-3"></button>
-					<button onclick="unsave()" class="bi bi-trash btn text-danger nohover fs-3"></button>
+					<button title="Reset Viewport" onclick="display.resetCamera()" class="bi bi-house btn text-info nohover fs-3" style="float: right;"></button>
+					<button title="Make Aspect Ratio 1:1" onclick="display.camera.fixAspectRatio()" class="bi bi-aspect-ratio btn text-success nohover fs-3" style="float: right;"></button>
+					<button title="Save Graph" onclick="save()" class="bi bi-floppy btn text-primary-emphasis nohover fs-3"></button>
+					<button title="Load Graph" onclick="load()" class="bi bi-upload btn text-warning nohover fs-3"></button>
+					<button title="Delete Saved Graph" onclick="unsave()" class="bi bi-trash btn text-danger nohover fs-3"></button>
 				</div>
 				<div id="equation-container" class="border-end d-flex flex-column">
 					<table id="equation-table" class="table align-middle table-sm">
 						<!-- Table does not generate a <tbody> unless it has something in it -->
 						<tr id="ignore"></tr>
 					</table>
-					<div onclick="equaTable.makeEquation()" class="h-100">
+					<div title="Add New Equation" onclick="equaTable.makeEquation()" class="h-100">
 						<button class="nohover btn fs-3 text-primary bi-plus-lg position-relative start-50 translate-middle"></button>
 					</div>
 				</div>
