@@ -1,16 +1,17 @@
 class Renderer {
-	constructor(display, equaTable) {
+	constructor(display, equaTable, compiler) {
 		/** @type {Display} */
 		this.display = display;
 		/** @type {EquationTable} */
 		this.equaTable = equaTable;
+		/** @type {Compiler} */
+		this.compiler = compiler;
 		/** @type {HTMLCanvasElement} */
 		this.glCanvas = document.getElementById('gl-canvas');
 		/** @type {WebGLRenderingContext} */
 		this.gl = this.glCanvas.getContext('webgl2', {
 			antialias: false,
 		});
-		this.superSampleDim = 1;
 		
 		this.gl.enable(this.gl.BLEND);
 		this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
@@ -20,11 +21,9 @@ class Renderer {
 		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), this.gl.STATIC_DRAW);
 		
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertBuffer);
-		
-		this.compiler = new Compiler();
 	}
 	
-	makeShaderProgram(id, equaContent) {
+	makeShaderProgram(equaContent) {
 		let vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
 		this.gl.shaderSource(vertShader, `#version 300 es
 			in vec2 position;
@@ -79,20 +78,20 @@ class Renderer {
 		this.gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
 		this.gl.clearColor(0, 0, 0, 0);
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+		if(this.compiler.forceRecompile) {
+			this.compiler.compileFunctions(this.equaTable);
+		}
 		let renderAfter = [];
 		for(let id in this.equaTable.equations) {
 			let equa = this.equaTable.equations[id];
-			if(equa.isModified) {
+			if(equa.isFunction) continue;
+			if(equa.isModified || this.compiler.forceRecompile) {
 				equa.isModified = false;
-				let wasNull = equa.program === null;
-				[equa.program, equa.method] = this.makeShaderProgram(id, this.equaTable.equations[id].content);
-				let button = document.getElementById(id).querySelector('#equation-button');
-				let space = button.className.indexOf(' ');
-				if(equa.program === null && !wasNull) {
-					equa.icon = button.className.substring(0, space);
-					button.className = button.className.replace(equa.icon, 'bi-exclamation-diamond')
-				} else if(wasNull && equa.program !== null) {
-					button.className = button.className.replace('bi-exclamation-diamond', equa.icon);
+				[equa.program, equa.method] = this.makeShaderProgram(this.equaTable.equations[id].content);
+				if(equa.program === null) {
+					equaTable.changeIcon(id, 'bi-exclamation-diamond');
+				} else {
+					equaTable.resetIcon(id);
 				}
 			}
 			if(equa.program !== null && !equa.isHidden) {
@@ -106,6 +105,7 @@ class Renderer {
 		for(let equa of renderAfter) {
 			this.renderEquation(equa);
 		}
+		this.compiler.forceRecompile = false;
 	}
 	
 	renderEquation(equa) {
@@ -118,8 +118,6 @@ class Renderer {
 		this.gl.uniform3f(uColor, equa.r / 255, equa.g / 255, equa.b / 255);
 		let uInvColor = this.gl.getUniformLocation(equa.program, '_invColor');
 		this.gl.uniform3f(uInvColor, equa.ir / 255, equa.ig / 255, equa.ib / 255);
-		let uSuperSampleDim = this.gl.getUniformLocation(equa.program, '_superSampleDim');
-		this.gl.uniform1f(uSuperSampleDim, this.superSampleDim);
 		this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 	}
 }

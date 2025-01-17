@@ -16,7 +16,7 @@
 			<!-- The first class in the button MUST be an icon, as it gets changed in code -->
 			<td><button id="equation-button" class="bi-graph-up bi nohover btn fs-3"></button></td>
 			<td class="w-100">
-				<textarea id="equation-content" rows="2" type="text" class="form-control"></textarea>
+				<textarea id="equation-content" rows="2" type="text" class="form-control" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
 			</td>
 			<td class="w-auto"><button id="equation-delete" class="nohover btn text-danger bi bi-x-lg fs-5"></button></td>
 		</tr>
@@ -57,14 +57,17 @@
 			uniform vec4 _bounds;
 			uniform vec3 _color;
 			uniform vec3 _invColor;
-			uniform float _superSampleDim;
 			
 			out vec4 _fragColor;
 			
+			float x, y;
+			
+			(SHARED_FUNCS)
+			
 			float _func(vec2 _p) {
-				float x = _p.x;
-				float y = _p.y;
-				return FUNCTION;
+				x = _p.x;
+				y = _p.y;
+				return (FUNCTION);
 			}
 			
 			vec2 _pixToCoord(vec2 p) {
@@ -104,10 +107,11 @@
 					}
 					guess = (low + high) / 2.0;
 				}
+				vGuess = _func(mix(p1, p2, guess));
 				return abs(vGuess) < vMag;
 			}
 			
-			vec4 gridSample(vec2 pix) {
+			vec4 _gridSampleMethod(vec2 pix) {
 				vec2 pixCoord = _pixToCoord(pix);
 				float cv = _func(pixCoord);
 				if(cv == 0.0) {
@@ -131,24 +135,6 @@
 				return vec4(0.0);
 			}
 			
-			vec4 _gridSampleMethod(vec2 pix) {
-				if(_superSampleDim == 1.0) {
-					return gridSample(pix);
-				}
-				vec2 off;
-				vec4 color = vec4(0.0);
-				int count = 0;
-				for(off.x = -0.5; off.x <= 0.5; off.x += 1.0 / (_superSampleDim - 1.0)) {
-					for(off.y = -0.5; off.y <= 0.5; off.y += 1.0 / (_superSampleDim - 1.0)) {
-						vec2 pixOff = pix + off * 0.9;
-						vec4 col = gridSample(pixOff);
-						color += col;
-						count++;
-					}
-				}
-				return color / float(count);
-			}
-			
 			float isoRound(float v) {
 				v = sign(v) * log2(max(0.5, abs(v)));
 				if(v == 0.0) return 1.0;
@@ -157,7 +143,7 @@
 			
 			bool _gridSampleIsolines(vec2 pix, float val) {
 				val = isoRound(val);
-				for(int i = 0; i < 8; i++) {
+				for(int i = 0; i < 4; i++) {
 					vec2 p = _pixToCoord(pix + offsets[i]);
 					float v = isoRound(_func(p));
 					if(floor(v) != val) return true;
@@ -165,7 +151,7 @@
 				return false;
 			}
 			
-			vec4 valuePlotSample(vec2 pix) {
+			vec4 _valuePlotMethod(vec2 pix) {
 				float val = _func(_pixToCoord(pix));
 				vec3 col = (val > 0.0) ? _color : _invColor;
 				float alpha = 0.7;
@@ -177,27 +163,8 @@
 				return vec4(col, alpha);
 			}
 			
-			vec4 _valuePlotMethod(vec2 pix) {
-				if(_superSampleDim == 1.0) {
-					return valuePlotSample(pix);
-				}
-				vec2 off;
-				vec4 color = vec4(0.0);
-				int count = 0;
-				for(off.x = -0.5; off.x <= 0.5; off.x += 1.0 / (_superSampleDim - 1.0)) {
-					for(off.y = -0.5; off.y <= 0.5; off.y += 1.0 / (_superSampleDim - 1.0)) {
-						vec2 pixOff = pix + off * 0.9;
-						vec4 col = valuePlotSample(pixOff);
-						color += col;
-						count++;
-					}
-				}
-				color /= float(count);
-				return color;
-			}
-			
 			void main() {
-				_fragColor = _METHOD(gl_FragCoord.xy + vec2(0.5));
+				_fragColor = _(METHOD)(gl_FragCoord.xy + vec2(0.5));
 			}
 		</script>
 		<script src="equation-table.js"></script>

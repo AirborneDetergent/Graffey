@@ -1,8 +1,9 @@
 class EquationTable {
-	constructor() {
+	constructor(compiler) {
 		this.table = document.getElementById('equation-table').children[0];
 		this.nextId = 0;
 		this.equations = {};
+		this.compiler = compiler;
 	}
 	
 	newEquation(r, g, b) {
@@ -55,6 +56,24 @@ class EquationTable {
 		return [r * 255, g * 255, b * 255];
 	}
 	
+	changeIcon(id, newIcon) {
+		let button = document.getElementById(id).querySelector('#equation-button');
+		let space = button.className.indexOf(' ');
+		let prevIcon = button.className.substring(0, space);
+		button.className = button.className.replace(prevIcon, newIcon);
+	}
+	
+	resetIcon(id) {
+		let equa = this.equations[id];
+		if(equa.isFunction) {
+			this.changeIcon(id, 'bi-braces-asterisk');
+		} else if(equa.method == 'gridSampleMethod') {
+			this.changeIcon(id, 'bi-graph-up');
+		} else if(equa.method == 'valuePlotMethod') {
+			this.changeIcon(id, 'bi-grid-3x3');
+		}
+	}
+	
 	addEquation(r, g, b, ir, ig, ib, angle, contentString, id) {
 		let equa = this.newEquation(r, g, b);
 		this.table.appendChild(equa);
@@ -62,6 +81,9 @@ class EquationTable {
 		equa.id = id;
 		let delButton = equa.querySelector('#equation-delete');
 		delButton.onclick = () => {
+			if(equa.isFunction) {
+				this.compiler.forceRecompile = true;
+			}
 			equa.remove();
 			delete this.equations[equa.id];
 		};
@@ -69,7 +91,7 @@ class EquationTable {
 		eqButton.onclick = () => {
 			if(this.equations[equa.id].isHidden) {
 				this.equations[equa.id].isHidden = false;
-				eqButton.className = eqButton.className.replace('opacity-25', '');
+				eqButton.className = eqButton.className.replace(' opacity-25', '');
 			} else {
 				this.equations[equa.id].isHidden = true;
 				eqButton.className = eqButton.className + ' opacity-25';
@@ -79,8 +101,15 @@ class EquationTable {
 		content.value = contentString;
 		content.oninput = (e) => {
 			let id = e.target.parentElement.parentElement.id;
-			this.equations[id].content = e.target.value;
-			this.equations[id].isModified = true;
+			let equa = this.equations[id];
+			equa.content = e.target.value;
+			equa.isModified = true;
+			let wasFunc = equa.isFunction;
+			equa.isFunction = equa.content.indexOf('=>') != -1;
+			if(equa.isFunction || wasFunc) {
+				this.compiler.forceRecompile = true;
+				this.resetIcon(id);
+			}
 		}
 		if(!this.equations[equa.id]) this.equations[equa.id] = {};
 		let e = this.equations[equa.id];
@@ -93,6 +122,8 @@ class EquationTable {
 		e.angle = angle;
 		e.content = contentString;
 		e.isModified = true;
+		e.isFunction = e.content.indexOf('=>') != -1;
+		this.resetIcon(id);
 		if(e.isHidden) {
 			eqButton.className = eqButton.className + ' opacity-25';
 		}

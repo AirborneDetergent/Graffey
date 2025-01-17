@@ -16,7 +16,7 @@ class PerfMeter {
 		if(sinceUpdate >= 1000) {
 			let fps = this.frameCount / sinceUpdate * 1000;
 			this.lastUpdate = now;
-			this.element.textContent = `${fps.toFixed(2)} FPS\r\n${this.peak}ms peak\r\n${renderer.superSampleDim}^2 samples`;
+			this.element.textContent = `${fps.toFixed(2)} FPS\r\n${this.peak}ms peak`;
 			this.frameCount = 0;
 			this.peak = 0;
 		}
@@ -70,7 +70,9 @@ function load() {
 	if(name == null) return;
 	let json = window.localStorage.getItem(name);
 	if(!json) return;
-	for(let equa of equaTable.table.children) {
+	for(let i = equaTable.table.children.length - 1; i >= 0; i--) {
+		let equa = equaTable.table.children[i];
+		console.log(equa.id);
 		if(equa.id == 'ignore') continue;
 		equa.remove();
 		delete equaTable.equations[equa.id];
@@ -94,6 +96,7 @@ function load() {
 	display.camera.maxX = data.maxX;
 	display.camera.minY = data.minY;
 	display.camera.maxY = data.maxY;
+	compiler.forceRecompile = true;
 }
 
 function render() {
@@ -103,12 +106,14 @@ function render() {
 	requestAnimationFrame(render);
 }
 
-let equaTable = new EquationTable();
+let compiler = new Compiler();
+
+let equaTable = new EquationTable(compiler);
 equaTable.makeEquation();
 
 let display = new Display();
 
-let renderer = new Renderer(display, equaTable);
+let renderer = new Renderer(display, equaTable, compiler);
 
 let perfMeter = new PerfMeter();
 
