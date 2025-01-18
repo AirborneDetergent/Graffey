@@ -52,6 +52,11 @@
 		<script id="plot-shader" src="plot.frag" type="x-shader/x-fragment">#version 300 es
 			#line 54
 			precision highp float;
+			
+			#define pi 3.1415926536
+			#define tau 6.2831853072
+			#define e 2.7182818285
+			
 
 			uniform vec2 _resolution;
 			uniform vec4 _bounds;
@@ -136,8 +141,7 @@
 			}
 			
 			float isoRound(float v) {
-				v = sign(v) * log2(max(0.5, abs(v)));
-				if(v == 0.0) return 1.0;
+				v = log2(max(1.0, abs(v))) * sign(v) + sign(v);
 				return (v > 0.0) ? ceil(v) : floor(v);
 			}
 			
