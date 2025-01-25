@@ -8,7 +8,7 @@ class Renderer {
 		this.compiler = compiler;
 		/** @type {HTMLCanvasElement} */
 		this.glCanvas = document.getElementById('gl-canvas');
-		/** @type {WebGLRenderingContext} */
+		/** @type {WebGL2RenderingContext} */
 		this.gl = this.glCanvas.getContext('webgl2', {
 			antialias: false,
 		});
@@ -21,6 +21,13 @@ class Renderer {
 		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), this.gl.STATIC_DRAW);
 		
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertBuffer);
+		
+		this.drawIsolines = true;
+		this.randomizeSeed();
+	}
+	
+	randomizeSeed() {
+		this.randomSeed = Math.floor(Math.random() * 4294967296);
 	}
 	
 	makeShaderProgram(equaContent) {
@@ -118,6 +125,10 @@ class Renderer {
 		this.gl.uniform3f(uColor, equa.r / 255, equa.g / 255, equa.b / 255);
 		let uInvColor = this.gl.getUniformLocation(equa.program, '_invColor');
 		this.gl.uniform3f(uInvColor, equa.ir / 255, equa.ig / 255, equa.ib / 255);
+		let uSeed = this.gl.getUniformLocation(equa.program, '_seed');
+		this.gl.uniform1ui(uSeed, this.randomSeed);
+		let uDrawIsolines = this.gl.getUniformLocation(equa.program, '_drawIsolines');
+		this.gl.uniform1ui(uDrawIsolines, this.drawIsolines ? 1 : 0);
 		this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 	}
 }

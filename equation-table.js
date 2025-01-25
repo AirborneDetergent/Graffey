@@ -89,13 +89,8 @@ class EquationTable {
 		};
 		let eqButton = equa.querySelector('#equation-button');
 		eqButton.onclick = () => {
-			if(this.equations[equa.id].isHidden) {
-				this.equations[equa.id].isHidden = false;
-				eqButton.className = eqButton.className.replace(' opacity-25', '');
-			} else {
-				this.equations[equa.id].isHidden = true;
-				eqButton.className = eqButton.className + ' opacity-25';
-			}
+			this.equations[equa.id].isHidden = !this.equations[equa.id].isHidden;
+			eqButton.classList.toggle('opacity-25', this.equations[equa.id].isHidden);
 		};
 		let content = equa.querySelector('#equation-content');
 		content.value = contentString;

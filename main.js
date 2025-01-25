@@ -99,6 +99,12 @@ function load() {
 	compiler.forceRecompile = true;
 }
 
+function toggleIsolines() {
+	let button = document.querySelector('#toggle-isolines');
+	renderer.drawIsolines = !renderer.drawIsolines;
+	button.classList.toggle('opacity-25', !renderer.drawIsolines);
+}
+
 function render() {
 	let dt = perfMeter.tick(renderer) / 1000;
 	display.render(dt);

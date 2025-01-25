@@ -28,6 +28,8 @@
 				<div class="w-100 border-bottom border-3 bg-dark-subtle">
 					<button title="Reset Viewport" onclick="display.resetCamera()" class="bi bi-house btn text-info nohover fs-3" style="float: right;"></button>
 					<button title="Make Aspect Ratio 1:1" onclick="display.camera.fixAspectRatio()" class="bi bi-aspect-ratio btn text-success nohover fs-3" style="float: right;"></button>
+					<button id="toggle-isolines" title="Toggle Isolines" onclick="toggleIsolines()" class="bi bi-radar btn text-light nohover fs-3" style="float: right;"></button>
+					<button title="Randomize Seed" onclick="renderer.randomizeSeed()" class="bi bi-dice-6 btn nohover fs-3" style="float: right; color: #D08FD6"></button>
 					<button title="Save Graph" onclick="save()" class="bi bi-floppy btn text-primary-emphasis nohover fs-3"></button>
 					<button title="Load Graph" onclick="load()" class="bi bi-upload btn text-warning nohover fs-3"></button>
 					<button title="Delete Saved Graph" onclick="unsave()" class="bi bi-trash btn text-danger nohover fs-3"></button>
@@ -50,22 +52,58 @@
 		<div id="perf-meter"></div>
 		
 		<script id="plot-shader" src="plot.frag" type="x-shader/x-fragment">#version 300 es
-			#line 54
+			#line 55
 			precision highp float;
 			
 			#define pi 3.1415926536
 			#define tau 6.2831853072
 			#define e 2.7182818285
 			
-
 			uniform vec2 _resolution;
 			uniform vec4 _bounds;
 			uniform vec3 _color;
 			uniform vec3 _invColor;
+			uniform uint _seed;
+			uniform bool _drawIsolines;
 			
 			out vec4 _fragColor;
 			
 			float x, y;
+			
+			uint _hash(uint n) {
+				n ^= _seed;
+				n ^= n >> 16;
+				n *= 0x7feb352dU;
+				n ^= n >> 15;
+				n *= 0x846ca68bU;
+				n ^= n >> 16;
+				return n;
+			}
+			
+			float rand(float a) {
+				return float(_hash(floatBitsToUint(a))) / 4294967296.0;
+			}
+			
+			float rand(float a, float b) {
+				uint res = _hash(floatBitsToUint(a));
+				res = _hash(res ^ floatBitsToUint(b));
+				return float(res) / 4294967296.0;
+			}
+			
+			float rand(float a, float b, float c) {
+				uint res = _hash(floatBitsToUint(a));
+				res = _hash(res ^ floatBitsToUint(b));
+				res = _hash(res ^ floatBitsToUint(c));
+				return float(res) / 4294967296.0;
+			}
+			
+			float rand(float a, float b, float c, float d) {
+				uint res = _hash(floatBitsToUint(a));
+				res = _hash(res ^ floatBitsToUint(b));
+				res = _hash(res ^ floatBitsToUint(c));
+				res = _hash(res ^ floatBitsToUint(d));
+				return float(res) / 4294967296.0;
+			}
 			
 			(SHARED_FUNCS)
 			
@@ -157,10 +195,18 @@
 			
 			vec4 _valuePlotMethod(vec2 pix) {
 				float val = _func(_pixToCoord(pix));
+				if(isnan(val)) {
+					bool isPositive = ((uint(gl_FragCoord.x) >> 2 ^ uint(gl_FragCoord.y) >> 2) & 1u) == 0u;
+					vec3 avgCol = (_color + _invColor) / 2.0;
+					if(isPositive) {
+						return vec4(avgCol * 0.5 + 0.5, 0.9);
+					}
+					return vec4(avgCol * 0.5, 0.9);
+				}
 				vec3 col = (val > 0.0) ? _color : _invColor;
 				float alpha = 0.7;
-				col = mix(vec3(0.0), col, tanh(abs(val/2.0)));
-				if(_gridSampleIsolines(pix, _func(_pixToCoord(pix)))) {
+				col *= tanh(abs(val));
+				if(_drawIsolines && _gridSampleIsolines(pix, _func(_pixToCoord(pix)))) {
 					col = vec3(mix(vec3(1.0), col, 0.2));
 					alpha = 0.9;
 				}
