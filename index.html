@@ -51,6 +51,36 @@
 		</div>
 		<div id="perf-meter"></div>
 		
+		<script id="accum-shader" src="accum.frag" type="x-shader/x-fragment">#version 300 es
+			precision highp float;
+			
+			uniform sampler2D frame;
+			uniform sampler2D accum;
+			
+			uniform vec2 resolution;
+			
+			out vec4 fragColor;
+			
+			void main() {
+				vec2 uv = gl_FragCoord.xy / resolution;
+				fragColor = texture(frame, uv);
+			}
+		</script>
+		
+		<script id="show-shader" src="show.frag" type="x-shader/x-fragment">#version 300 es
+			precision highp float;
+			
+			uniform sampler2D image;
+			uniform vec2 resolution;
+			
+			out vec4 fragColor;
+			
+			void main() {
+				vec2 uv = gl_FragCoord.xy / resolution;
+				fragColor = texture(image, uv);
+			}
+		</script>
+		
 		<script id="plot-shader" src="plot.frag" type="x-shader/x-fragment">#version 300 es
 			#line 55
 			precision highp float;
@@ -65,6 +95,7 @@
 			uniform vec3 _invColor;
 			uniform uint _seed;
 			uniform bool _drawIsolines;
+			uniform float _curTime;
 			
 			out vec4 _fragColor;
 			
@@ -214,7 +245,11 @@
 			}
 			
 			void main() {
-				_fragColor = _(METHOD)(gl_FragCoord.xy + vec2(0.5));
+				vec2 offset = vec2(
+					rand(gl_FragCoord.x, gl_FragCoord.y, _curTime),
+					rand(gl_FragCoord.x, gl_FragCoord.y, _curTime + 1238.2737)
+				);
+				_fragColor = _(METHOD)(gl_FragCoord.xy + offset);
 			}
 		</script>
 		<script src="equation-table.js"></script>

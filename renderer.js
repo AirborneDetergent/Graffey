@@ -14,7 +14,6 @@ class Renderer {
 		});
 		
 		this.gl.enable(this.gl.BLEND);
-		this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 		
 		let vertBuffer = this.gl.createBuffer();
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertBuffer);
@@ -22,41 +21,44 @@ class Renderer {
 		
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertBuffer);
 		
-		this.drawIsolines = true;
-		this.randomizeSeed();
-	}
-	
-	randomizeSeed() {
-		this.randomSeed = Math.floor(Math.random() * 4294967296);
-	}
-	
-	makeShaderProgram(equaContent) {
-		let vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
-		this.gl.shaderSource(vertShader, `#version 300 es
+		let vertSource = `#version 300 es
 			in vec2 position;
 			
 			void main() {
 				gl_Position = vec4(position, 0, 1);
 			}
-		`);
+		`;
+		this.showProgram = this.compileProgram(vertSource, document.querySelector('#show-shader').textContent);
+		this.accumProgram = this.compileProgram(vertSource, document.querySelector('#accum-shader').textContent);
+		
+		this.targBuffer = this.gl.createFramebuffer();
+		this.accumBuffer = this.gl.createFramebuffer();
+		this.alphaBuffer = this.gl.createFramebuffer();
+		
+		this.startTime = new Date().getTime() / 1000;
+		this.drawIsolines = true;
+		this.randomizeSeed();
+		
+		this.fixSize(true);
+	}
+	
+	compileProgram(vertSource, fragSource) {
+		let vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
+		this.gl.shaderSource(vertShader, vertSource);
 		this.gl.compileShader(vertShader);
 		if (!this.gl.getShaderParameter(vertShader, this.gl.COMPILE_STATUS)) {
 			const errorLog = this.gl.getShaderInfoLog(fragShader);
 			console.error('Vertex Shader:', errorLog);
-			return [null, null];
+			return null;
 		}
-		
 		let fragShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-		let source = document.getElementById('plot-shader').textContent;
-		let method;
-		[source, method] = this.compiler.compile(equaContent, source);
-		this.gl.shaderSource(fragShader, source);
+		this.gl.shaderSource(fragShader, fragSource);
 		this.gl.compileShader(fragShader);
 		
 		if (!this.gl.getShaderParameter(fragShader, this.gl.COMPILE_STATUS)) {
 			const errorLog = this.gl.getShaderInfoLog(fragShader);
 			console.error('Fragment Shader:', errorLog);
-			return [null, null];
+			return null;
 		}
 		
 		let program = this.gl.createProgram();
@@ -67,21 +69,65 @@ class Renderer {
 		
 		if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
 			console.log('Program Creation:', this.gl.getProgramInfoLog(program));
-			return [null, null];
+			return null;
 		}
 		
 		let pos = this.gl.getAttribLocation(program, 'position');
 		this.gl.vertexAttribPointer(pos, 2, this.gl.FLOAT, false, 0, 0);
 		this.gl.enableVertexAttribArray(pos);
 		
+		return program;
+	}
+	
+	randomizeSeed() {
+		this.randomSeed = Math.floor(Math.random() * 4294967296);
+	}
+	
+	makeShaderProgram(equaContent) {
+		let vertSource = `#version 300 es
+			in vec2 position;
+			
+			void main() {
+				gl_Position = vec4(position, 0, 1);
+			}
+		`;
+		let source = document.querySelector('#plot-shader').textContent;
+		let method;
+		[source, method] = this.compiler.compile(equaContent, source);
+		
+		let program = this.compileProgram(vertSource, source);
+		if(program === null) return [null, null];
+		
 		return [program, method];
 	}
 	
-	render(dt) {
+	genBufferTexture(framebuffer, intform, format, type) {
+		let tex = this.gl.createTexture();
+		this.gl.bindTexture(this.gl.TEXTURE_2D, tex);
+		this.gl.texImage2D(this.gl.TEXTURE_2D, 0, intform, this.display.width, this.display.height, 0, format, type, null);
+		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+		this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebuffer);
+		this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, tex, 0);
+		this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER);
+		return tex;
+	}
+	
+	fixSize(force = false) {
+		if(!force && this.glCanvas.width == this.display.width && this.glCanvas.height == this.display.height) 
+			return;
 		this.glCanvas.width = this.display.width;
 		this.glCanvas.height = this.display.height;
 		this.glCanvas.style.width = this.display.canvas.offsetWidth + 'px';
 		this.glCanvas.style.height = this.display.canvas.offsetHeight + 'px';
+		this.targTex = this.genBufferTexture(this.targBuffer, this.gl.RGBA8, this.gl.RGBA, this.gl.UNSIGNED_BYTE);
+		this.accumTex = this.genBufferTexture(this.accumBuffer, this.gl.RGBA8, this.gl.RGBA, this.gl.UNSIGNED_BYTE);
+		//this.alphaTex = this.genBufferTexture(this.alphaBuffer, this.gl.R16F, this.gl.RED, this.gl.FLOAT);
+	}
+	
+	renderFrame() {
+		this.gl.blendFunc(this.gl.ONE, this.gl.ZERO);
+		this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.targBuffer);
 		this.gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
 		this.gl.clearColor(0, 0, 0, 0);
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
@@ -115,6 +161,39 @@ class Renderer {
 		this.compiler.forceRecompile = false;
 	}
 	
+	accumulateFrame() {
+		this.gl.blendFunc(this.gl.ONE, this.gl.ZERO);
+		this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.accumBuffer);
+		this.gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
+		
+		let uResolution = this.gl.getUniformLocation(this.accumProgram, 'resolution');
+	}
+	
+	showAccumulatedGraph() {
+		this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+		this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+		this.gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
+		this.gl.useProgram(this.showProgram);
+		
+		let uResolution = this.gl.getUniformLocation(this.showProgram, 'resolution');
+		this.gl.uniform2f(uResolution, this.display.width, this.display.height);
+		
+		let uImage = this.gl.getUniformLocation(this.showProgram, 'image');
+		this.gl.activeTexture(this.gl.TEXTURE0);	
+		this.gl.bindTexture(this.gl.TEXTURE_2D, this.targTex);
+		this.gl.uniform1i(uImage, 0);
+		
+		this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+	}
+	
+	render(dt) {
+		this.fixSize();
+		this.renderFrame();
+		this.accumulateFrame();
+		this.showAccumulatedGraph();
+		
+	}
+	
 	renderEquation(equa) {
 		this.gl.useProgram(equa.program);
 		let uBounds = this.gl.getUniformLocation(equa.program, '_bounds');
@@ -129,6 +208,8 @@ class Renderer {
 		this.gl.uniform1ui(uSeed, this.randomSeed);
 		let uDrawIsolines = this.gl.getUniformLocation(equa.program, '_drawIsolines');
 		this.gl.uniform1ui(uDrawIsolines, this.drawIsolines ? 1 : 0);
+		let uCurTime = this.gl.getUniformLocation(equa.program, '_curTime');
+		this.gl.uniform1f(uCurTime, new Date().getTime() / 1000 - this.startTime);
 		this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 	}
 }
