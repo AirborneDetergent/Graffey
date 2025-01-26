@@ -65,8 +65,11 @@
 			void main() {
 				vec2 uv = gl_FragCoord.xy / resolution;
 				vec4 accumColor = vec4(texture(accum, uv));
-				vec4 frameColor = texture(frame, uv) * 65535.0;
-				fragColor = uvec4(accumColor * (1.0 - opacity) + frameColor * opacity);
+				vec4 frameColor = texture(frame, uv);
+				frameColor.rgb = pow(frameColor.rgb, vec3(2.2));
+				frameColor *= 65535.0;
+				float alpha = opacity == 1.0 ? frameColor.a : max(accumColor.a, frameColor.a);
+				fragColor = uvec4(accumColor.rgb * (1.0 - opacity) + frameColor.rgb * opacity, alpha);
 			}
 		</script>
 		
@@ -241,8 +244,9 @@
 					return vec4(avgCol * 0.5, 0.9);
 				}
 				vec3 col = (val > 0.0) ? _color : _invColor;
-				float alpha = 0.7;
-				col *= tanh(abs(val));
+				float alpha = 0.8;
+				float colStren = tanh(abs(val));
+				col *= colStren * colStren;
 				if(_drawIsolines && _gridSampleIsolines(pix, _func(_pixToCoord(pix)))) {
 					col = vec3(mix(vec3(1.0), col, 0.2));
 					alpha = 0.9;
@@ -255,7 +259,9 @@
 					rand(gl_FragCoord.x, gl_FragCoord.y, _curTime),
 					rand(gl_FragCoord.x, gl_FragCoord.y, _curTime + 1238.2737)
 				);
-				_fragColor = _(METHOD)(gl_FragCoord.xy + offset);
+				vec4 col = _(METHOD)(gl_FragCoord.xy + offset);
+				col.rgb = pow(col.rgb, vec3(1.0 / 2.2));
+				_fragColor = col;
 			}
 		</script>
 		<script src="equation-table.js"></script>

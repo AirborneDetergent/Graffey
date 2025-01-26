@@ -33,7 +33,6 @@ class Renderer {
 		
 		this.targBuffer = this.gl.createFramebuffer();
 		this.accumBuffer = this.gl.createFramebuffer();
-		this.alphaBuffer = this.gl.createFramebuffer();
 		
 		this.startTime = new Date().getTime() / 1000;
 		this.drawIsolines = true;
@@ -124,12 +123,11 @@ class Renderer {
 		this.targTex = this.genBufferTexture(this.targBuffer, this.gl.RGBA8, this.gl.RGBA, this.gl.UNSIGNED_BYTE);
 		this.accumTex = this.genBufferTexture(this.accumBuffer, this.gl.RGBA16UI, this.gl.RGBA_INTEGER, this.gl.UNSIGNED_SHORT);
 		this.accumTexSwap = this.genBufferTexture(this.accumBuffer, this.gl.RGBA16UI, this.gl.RGBA_INTEGER, this.gl.UNSIGNED_SHORT);
-		//this.alphaTex = this.genBufferTexture(this.alphaBuffer, this.gl.R16F, this.gl.RED, this.gl.FLOAT);
 	}
 	
 	renderFrame() {
 		this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.targBuffer);
-		this.gl.blendFuncSeparate(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA, this.gl.ONE, this.gl.ONE);
+		this.gl.blendFuncSeparate(this.gl.ONE, this.gl.ONE, this.gl.ONE, this.gl.ONE);
 		this.gl.blendEquationSeparate(this.gl.FUNC_ADD, this.gl.MAX);
 		this.gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
 		this.gl.clearColor(0, 0, 0, 0);

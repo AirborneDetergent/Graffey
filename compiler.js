@@ -39,8 +39,8 @@ class Compiler {
 		//equa.replaceAll(/(\r\n)|\n/g, ' ');
 		equa = this.floatifyInts(equa);
 		let method;
-		let ind = equa.indexOf('=');
-		if(ind == -1) {
+		let ind = equa.match(/(?<!=)=(?!=)/)?.index;
+		if(ind == undefined) {
 			method = 'valuePlotMethod';
 		} else {
 			let side1 = equa.substring(0, ind);
