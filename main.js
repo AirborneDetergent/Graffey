@@ -124,4 +124,6 @@ let renderer = new Renderer(display, equaTable, compiler);
 
 let perfMeter = new PerfMeter();
 
+equaTable.renderer = renderer;
+
 render();

@@ -4,6 +4,8 @@ class EquationTable {
 		this.nextId = 0;
 		this.equations = {};
 		this.compiler = compiler;
+		/** @type {Renderer} */
+		this.renderer = null;
 	}
 	
 	newEquation(r, g, b) {
@@ -85,6 +87,9 @@ class EquationTable {
 			if(this.equations[equa.id].isFunction) {
 				this.compiler.forceRecompile = true;
 			}
+			if(!this.equations[equa.id].isHidden) {
+				this.renderer.accumFrames = 0;
+			}
 			equa.remove();
 			delete this.equations[equa.id];
 		};
@@ -92,6 +97,7 @@ class EquationTable {
 		eqButton.onclick = () => {
 			this.equations[equa.id].isHidden = !this.equations[equa.id].isHidden;
 			eqButton.classList.toggle('opacity-25', this.equations[equa.id].isHidden);
+			this.renderer.accumFrames = 0;
 		};
 		let content = equa.querySelector('#equation-content');
 		content.value = contentString;
