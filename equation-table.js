@@ -81,7 +81,8 @@ class EquationTable {
 		equa.id = id;
 		let delButton = equa.querySelector('#equation-delete');
 		delButton.onclick = () => {
-			if(equa.isFunction) {
+			console.log(this.equations[equa.id]);
+			if(this.equations[equa.id].isFunction) {
 				this.compiler.forceRecompile = true;
 			}
 			equa.remove();

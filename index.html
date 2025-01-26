@@ -55,29 +55,35 @@
 			precision highp float;
 			
 			uniform sampler2D frame;
-			uniform sampler2D accum;
+			uniform highp usampler2D accum;
 			
 			uniform vec2 resolution;
+			uniform float opacity;
 			
-			out vec4 fragColor;
+			out uvec4 fragColor;
 			
 			void main() {
 				vec2 uv = gl_FragCoord.xy / resolution;
-				fragColor = texture(frame, uv);
+				vec4 accumColor = vec4(texture(accum, uv));
+				vec4 frameColor = texture(frame, uv) * 65535.0;
+				fragColor = uvec4(accumColor * (1.0 - opacity) + frameColor * opacity);
 			}
 		</script>
 		
 		<script id="show-shader" src="show.frag" type="x-shader/x-fragment">#version 300 es
 			precision highp float;
 			
-			uniform sampler2D image;
+			uniform highp usampler2D image;
 			uniform vec2 resolution;
 			
 			out vec4 fragColor;
 			
 			void main() {
 				vec2 uv = gl_FragCoord.xy / resolution;
-				fragColor = texture(image, uv);
+				uvec4 ucol = texture(image, uv);
+				vec4 col = vec4(ucol) / 65535.0;
+				col.rgb = pow(col.rgb, vec3(1.0/2.2));
+				fragColor = col;
 			}
 		</script>
 		

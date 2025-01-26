@@ -37,6 +37,7 @@ class Renderer {
 		
 		this.startTime = new Date().getTime() / 1000;
 		this.drawIsolines = true;
+		this.accumFrames = 0;
 		this.randomizeSeed();
 		
 		this.fixSize(true);
@@ -81,6 +82,7 @@ class Renderer {
 	
 	randomizeSeed() {
 		this.randomSeed = Math.floor(Math.random() * 4294967296);
+		this.accumFrames = 0;
 	}
 	
 	makeShaderProgram(equaContent) {
@@ -105,11 +107,10 @@ class Renderer {
 		let tex = this.gl.createTexture();
 		this.gl.bindTexture(this.gl.TEXTURE_2D, tex);
 		this.gl.texImage2D(this.gl.TEXTURE_2D, 0, intform, this.display.width, this.display.height, 0, format, type, null);
-		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
-		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
 		this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebuffer);
 		this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, tex, 0);
-		this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER);
 		return tex;
 	}
 	
@@ -121,7 +122,8 @@ class Renderer {
 		this.glCanvas.style.width = this.display.canvas.offsetWidth + 'px';
 		this.glCanvas.style.height = this.display.canvas.offsetHeight + 'px';
 		this.targTex = this.genBufferTexture(this.targBuffer, this.gl.RGBA8, this.gl.RGBA, this.gl.UNSIGNED_BYTE);
-		this.accumTex = this.genBufferTexture(this.accumBuffer, this.gl.RGBA8, this.gl.RGBA, this.gl.UNSIGNED_BYTE);
+		this.accumTex = this.genBufferTexture(this.accumBuffer, this.gl.RGBA16UI, this.gl.RGBA_INTEGER, this.gl.UNSIGNED_SHORT);
+		this.accumTexSwap = this.genBufferTexture(this.accumBuffer, this.gl.RGBA16UI, this.gl.RGBA_INTEGER, this.gl.UNSIGNED_SHORT);
 		//this.alphaTex = this.genBufferTexture(this.alphaBuffer, this.gl.R16F, this.gl.RED, this.gl.FLOAT);
 	}
 	
@@ -133,6 +135,7 @@ class Renderer {
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 		if(this.compiler.forceRecompile) {
 			this.compiler.compileFunctions(this.equaTable);
+			this.accumFrames = 0;
 		}
 		let renderAfter = [];
 		for(let id in this.equaTable.equations) {
@@ -140,6 +143,7 @@ class Renderer {
 			if(equa.isFunction) continue;
 			if(equa.isModified || this.compiler.forceRecompile) {
 				equa.isModified = false;
+				this.accumFrames = 0;
 				[equa.program, equa.method] = this.makeShaderProgram(this.equaTable.equations[id].content);
 				if(equa.program === null) {
 					equaTable.changeIcon(id, 'bi-exclamation-diamond');
@@ -165,8 +169,32 @@ class Renderer {
 		this.gl.blendFunc(this.gl.ONE, this.gl.ZERO);
 		this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.accumBuffer);
 		this.gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
+		this.gl.useProgram(this.accumProgram);
+		
+		let tmp = this.accumTexSwap;
+		this.accumTexSwap = this.accumTex;
+		this.accumTex = tmp;
+		this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.accumTex, 0);
 		
 		let uResolution = this.gl.getUniformLocation(this.accumProgram, 'resolution');
+		this.gl.uniform2f(uResolution, this.display.width, this.display.height);
+		
+		let uAccum = this.gl.getUniformLocation(this.accumProgram, 'accum');
+		this.gl.activeTexture(this.gl.TEXTURE0);	
+		this.gl.bindTexture(this.gl.TEXTURE_2D, this.accumTexSwap);
+		this.gl.uniform1i(uAccum, 0);
+		
+		let uFrame = this.gl.getUniformLocation(this.accumProgram, 'frame');
+		this.gl.activeTexture(this.gl.TEXTURE1);
+		this.gl.bindTexture(this.gl.TEXTURE_2D, this.targTex);
+		this.gl.uniform1i(uFrame, 1);
+		
+		let uOpacity = this.gl.getUniformLocation(this.accumProgram, 'opacity');
+		let opacity = 1 / (this.accumFrames + 1);
+		this.gl.uniform1f(uOpacity, opacity);
+		
+		this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+		this.accumFrames++;
 	}
 	
 	showAccumulatedGraph() {
@@ -180,18 +208,21 @@ class Renderer {
 		
 		let uImage = this.gl.getUniformLocation(this.showProgram, 'image');
 		this.gl.activeTexture(this.gl.TEXTURE0);	
-		this.gl.bindTexture(this.gl.TEXTURE_2D, this.targTex);
+		this.gl.bindTexture(this.gl.TEXTURE_2D, this.accumTex);
 		this.gl.uniform1i(uImage, 0);
 		
 		this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 	}
 	
 	render(dt) {
+		if(this.display.camera.hasChanged()) {
+			this.accumFrames = 0;
+		}
 		this.fixSize();
 		this.renderFrame();
 		this.accumulateFrame();
 		this.showAccumulatedGraph();
-		
+		this.display.camera.updateOldBounds();
 	}
 	
 	renderEquation(equa) {
@@ -201,9 +232,9 @@ class Renderer {
 		let uResolution = this.gl.getUniformLocation(equa.program, '_resolution');
 		this.gl.uniform2f(uResolution, this.display.width, this.display.height);
 		let uColor = this.gl.getUniformLocation(equa.program, '_color');
-		this.gl.uniform3f(uColor, equa.r / 255, equa.g / 255, equa.b / 255);
+		this.gl.uniform3f(uColor, Math.pow(equa.r / 255, 2.2), Math.pow(equa.g / 255, 2.2), Math.pow(equa.b / 255, 2.2));
 		let uInvColor = this.gl.getUniformLocation(equa.program, '_invColor');
-		this.gl.uniform3f(uInvColor, equa.ir / 255, equa.ig / 255, equa.ib / 255);
+		this.gl.uniform3f(uInvColor, Math.pow(equa.ir / 255, 2.2), Math.pow(equa.ig / 255, 2.2), Math.pow(equa.ib / 255, 2.2));
 		let uSeed = this.gl.getUniformLocation(equa.program, '_seed');
 		this.gl.uniform1ui(uSeed, this.randomSeed);
 		let uDrawIsolines = this.gl.getUniformLocation(equa.program, '_drawIsolines');

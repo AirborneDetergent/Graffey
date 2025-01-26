@@ -147,6 +147,18 @@ class Camera {
 		this.display.canvas.addEventListener('wheel', this.handleWheel.bind(this));
 		this.scaleCenterX = 0;
 		this.scaleCenterY = 0;
+		this.updateOldBounds();
+	}
+	
+	updateOldBounds() {
+		this.oldMinX = this.minX;
+		this.oldMinY = this.minY;
+		this.oldMaxX = this.maxX;
+		this.oldMaxY = this.maxY;
+	}
+	
+	hasChanged() {
+		return this.minX != this.oldMinX || this.minY != this.oldMinY || this.maxX != this.oldMaxX || this.maxY != this.oldMaxY;
 	}
 	
 	reset(isInstant = true) {
@@ -162,9 +174,18 @@ class Camera {
 		}
 	}
 	
+	closenessToTarg(min, max, tmin, tmax) {
+		let scale = max - min;
+		return Math.max(Math.abs(tmin - min) / scale, Math.abs(tmax - max) / scale);
+	}
+	
 	updateSmoothZoom(dt) {
 		let w1 = 0.1 ** (dt * 10);
 		let w2 = 1 - w1;
+		if(Math.max(this.closenessToTarg(this.minX, this.maxX, this.tarMinX, this.tarMaxX), this.closenessToTarg(this.minY, this.maxY, this.tarMinY, this.tarMaxY)) < 0.001) {
+			w1 = 0;
+			w2 = 1;
+		};
 		this.minX = this.minX * w1 + this.tarMinX * w2;
 		this.minY = this.minY * w1 + this.tarMinY * w2;
 		this.maxX = this.maxX * w1 + this.tarMaxX * w2;

@@ -10,6 +10,7 @@ class Compiler {
 		let defs = '';
 		for(let id in equaTable.equations) {
 			let equa = equaTable.equations[id];
+			console.log(equa.content);
 			if(equa.isFunction) {
 				let func = equa.content;
 				let ind = func.indexOf('=>');

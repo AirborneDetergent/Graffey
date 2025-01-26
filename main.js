@@ -7,7 +7,7 @@ class PerfMeter {
 		this.peak = 0;
 	}
 	
-	tick(renderer) {
+	tick() {
 		let now = Date.now();
 		let elapsed = now - this.lastTick;
 		this.lastTick = now;
@@ -103,10 +103,11 @@ function toggleIsolines() {
 	let button = document.querySelector('#toggle-isolines');
 	renderer.drawIsolines = !renderer.drawIsolines;
 	button.classList.toggle('opacity-25', !renderer.drawIsolines);
+	renderer.accumFrames = 0;
 }
 
 function render() {
-	let dt = perfMeter.tick(renderer) / 1000;
+	let dt = perfMeter.tick() / 1000;
 	display.render(dt);
 	renderer.render(dt);
 	requestAnimationFrame(render);
