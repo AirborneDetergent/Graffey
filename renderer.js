@@ -238,9 +238,11 @@ class Renderer {
 		let uSeed = this.gl.getUniformLocation(equa.program, '_seed');
 		this.gl.uniform1ui(uSeed, this.randomSeed);
 		let uDrawIsolines = this.gl.getUniformLocation(equa.program, '_drawIsolines');
-		this.gl.uniform1ui(uDrawIsolines, this.drawIsolines ? 1 : 0);
+		this.gl.uniform1ui(uDrawIsolines, this.drawIsolines);
 		let uCurTime = this.gl.getUniformLocation(equa.program, '_curTime');
 		this.gl.uniform1f(uCurTime, new Date().getTime() / 1000 - this.startTime);
+		let uUseJitter = this.gl.getUniformLocation(equa.program, '_useJitter');
+		this.gl.uniform1ui(uUseJitter, this.accumFrames > 0);
 		this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 	}
 }

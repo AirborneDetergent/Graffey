@@ -105,6 +105,7 @@
 			uniform uint _seed;
 			uniform bool _drawIsolines;
 			uniform float _curTime;
+			uniform bool _useJitter;
 			
 			out vec4 _fragColor;
 			
@@ -255,10 +256,13 @@
 			}
 			
 			void main() {
-				vec2 offset = vec2(
-					rand(gl_FragCoord.x, gl_FragCoord.y, _curTime),
-					rand(gl_FragCoord.x, gl_FragCoord.y, _curTime + 1238.2737)
-				);
+				vec2 offset = vec2(0.0);
+				if(_useJitter) {
+					offset = vec2(
+						rand(gl_FragCoord.x, gl_FragCoord.y, _curTime) - 0.5,
+						rand(gl_FragCoord.x, gl_FragCoord.y, _curTime + 1238.2737) - 0.5
+					);
+				}
 				vec4 col = _(METHOD)(gl_FragCoord.xy + offset);
 				col.rgb = pow(col.rgb, vec3(1.0 / 2.2));
 				_fragColor = col;

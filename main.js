@@ -47,6 +47,8 @@ function save() {
 			maxX: display.camera.maxX,
 			minY: display.camera.minY,
 			maxY: display.camera.maxY,
+			drawIsolines: renderer.drawIsolines,
+			randomSeed: renderer.randomSeed,
 		}
 		window.localStorage.setItem(name, JSON.stringify(data));
 	}
@@ -96,6 +98,10 @@ function load() {
 	display.camera.maxX = data.maxX;
 	display.camera.minY = data.minY;
 	display.camera.maxY = data.maxY;
+	renderer.drawIsolines = data.drawIsolines;
+	renderer.randomSeed = data.randomSeed;
+	let button = document.querySelector('#toggle-isolines');
+	button.classList.toggle('opacity-25', !renderer.drawIsolines);
 	compiler.forceRecompile = true;
 }
 
