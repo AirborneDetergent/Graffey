@@ -256,14 +256,11 @@
 			}
 			
 			void main() {
-				vec2 offset = vec2(0.0);
-				if(_useJitter) {
-					offset = vec2(
-						rand(gl_FragCoord.x, gl_FragCoord.y, _curTime) - 0.5,
-						rand(gl_FragCoord.x, gl_FragCoord.y, _curTime + 1238.2737) - 0.5
-					);
-				}
-				vec4 col = _(METHOD)(gl_FragCoord.xy + offset);
+				vec2 offset = vec2(
+					rand(gl_FragCoord.x, gl_FragCoord.y, _curTime) - 0.5,
+					rand(gl_FragCoord.x, gl_FragCoord.y, _curTime + 1238.2737) - 0.5
+				);
+				vec4 col = _(METHOD)(gl_FragCoord.xy + offset * (_useJitter ? 1.0 : 0.01));
 				col.rgb = pow(col.rgb, vec3(1.0 / 2.2));
 				_fragColor = col;
 			}
