@@ -4,11 +4,11 @@ Graffey is a GPU-powered graphing calculator built using WebGL and Bootstrap.
 
 ## Controls
 
-Hold left click and drag to move the view around.
-Scroll the mouse wheel to zoom in and out.
-Hold middle click and drag to zoom along one axis.
-Left click and drag vertically on the bottom right corner of input areas to adjust their size.
-Most buttons have tooltips describing what they do when you hover over them with the mouse.
+Hold left click and drag to move the view around.  
+Scroll the mouse wheel to zoom in and out.  
+Hold middle click and drag to zoom along one axis.  
+Left click and drag vertically on the bottom right corner of input areas to adjust their size.  
+Most buttons have tooltips describing what they do when you hover over them with the mouse.  
 
 ## Rendering
 
@@ -41,10 +41,8 @@ The presence of a semicolon (`;`) will disable preprocessing for the function bo
 
 Because of the minimal preprocessing, math functions that are part of GLSL should all work here. Graffey also provides some extra functions and constants.
 
-pi = 3.1415926536
-
-tau = 6.2831853072
-
-e = 2.7182818285
+pi = 3.1415926536  
+tau = 6.2831853072  
+e = 2.7182818285  
 
 `rand()` accepts 1 to 4 arguments and returns a pseudo-random number between 0 and 1 that will be the same any time the exact same arguments are entered. If needed, make use of GLSL's built-in `round()` function to make the results consistent, like `y=rand(round(x))`. This function can be re-randomized by clicking the dice button. It is important to note that `rand()` is specifically designed to treat -0.0 and 0.0 as the same value.
