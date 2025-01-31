@@ -1,5 +1,5 @@
 # Graffey
----
+
 Graffey is a GPU-powered graphing calculator built using WebGL and Bootstrap.
 
 ## Controls
