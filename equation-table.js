@@ -58,21 +58,22 @@ class EquationTable {
 		return [r * 255, g * 255, b * 255];
 	}
 	
-	changeIcon(id, newIcon) {
+	changeIcon(id, newIcon, newTitle = null) {
 		let button = document.getElementById(id).querySelector('#equation-button');
 		let space = button.className.indexOf(' ');
 		let prevIcon = button.className.substring(0, space);
 		button.className = button.className.replace(prevIcon, newIcon);
+		button.title = newTitle || button.title;
 	}
 	
 	resetIcon(id) {
 		let equa = this.equations[id];
 		if(equa.isFunction) {
-			this.changeIcon(id, 'bi-braces-asterisk');
+			this.changeIcon(id, 'bi-braces-asterisk', 'Toggle Rendering');
 		} else if(equa.method == 'gridSampleMethod') {
-			this.changeIcon(id, 'bi-graph-up');
-		} else if(equa.method == 'valuePlotMethod') {
-			this.changeIcon(id, 'bi-grid-3x3');
+			this.changeIcon(id, 'bi-graph-up', 'Toggle Rendering');
+		} else if(equa.method == 'colorMapMethod') {
+			this.changeIcon(id, 'bi-grid-3x3', 'Toggle Rendering');
 		}
 	}
 	
@@ -83,7 +84,6 @@ class EquationTable {
 		equa.id = id;
 		let delButton = equa.querySelector('#equation-delete');
 		delButton.onclick = () => {
-			console.log(this.equations[equa.id]);
 			if(this.equations[equa.id].isFunction) {
 				this.compiler.forceRecompile = true;
 			}

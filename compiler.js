@@ -2,6 +2,46 @@ class Compiler {
 	constructor() {
 		this.funcsSource = '';
 		this.forceRecompile = false;
+		/** @type {WebGL2RenderingContext} */
+		this.gl = null;
+	}
+	
+	compileProgram(vertSource, fragSource) {
+		let vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
+		this.gl.shaderSource(vertShader, vertSource);
+		this.gl.compileShader(vertShader);
+		if (!this.gl.getShaderParameter(vertShader, this.gl.COMPILE_STATUS)) {
+			let errorLog = this.gl.getShaderInfoLog(fragShader);
+			console.error('Vertex Shader:', errorLog);
+			return errorLog;
+		}
+		let fragShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+		this.gl.shaderSource(fragShader, fragSource);
+		this.gl.compileShader(fragShader);
+		
+		if (!this.gl.getShaderParameter(fragShader, this.gl.COMPILE_STATUS)) {
+			let errorLog = this.gl.getShaderInfoLog(fragShader);
+			console.error('Fragment Shader:', errorLog);
+			return errorLog;
+		}
+		
+		let program = this.gl.createProgram();
+
+		this.gl.attachShader(program, vertShader);
+		this.gl.attachShader(program, fragShader);
+		this.gl.linkProgram(program);
+		
+		if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
+			let errorLog = this.gl.getProgramInfoLog(program);
+			console.log('Program Creation:', errorLog);
+			return errorLog;
+		}
+		
+		let pos = this.gl.getAttribLocation(program, 'position');
+		this.gl.vertexAttribPointer(pos, 2, this.gl.FLOAT, false, 0, 0);
+		this.gl.enableVertexAttribArray(pos);
+		
+		return program;
 	}
 	
 	compileFunctions(equaTable) {
@@ -32,8 +72,6 @@ class Compiler {
 		this.funcsSource = `${declas}\n\n${defs}`;
 	}
 	
-	
-	
 	compile(/** @type {String} */equa, /** @type {String} */source) {
 		// Replaces newlines with spaces, enable later if newlines cause errors
 		//equa.replaceAll(/(\r\n)|\n/g, ' ');
@@ -41,7 +79,7 @@ class Compiler {
 		let method;
 		let ind = equa.match(/(?<!=)=(?!=)/)?.index;
 		if(ind == undefined) {
-			method = 'valuePlotMethod';
+			method = 'colorMapMethod';
 		} else {
 			let side1 = equa.substring(0, ind);
 			let side2 = equa.substring(ind + 1);

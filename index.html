@@ -90,8 +90,7 @@
 			}
 		</script>
 		
-		<script id="plot-shader" src="plot.frag" type="x-shader/x-fragment">#version 300 es
-			#line 55
+		<script id="color-map-shader" src="colormap.frag" type="x-shader/x-fragment">#version 300 es
 			precision highp float;
 			
 			#define pi 3.1415926536
@@ -121,28 +120,33 @@
 				return n;
 			}
 			
+			// Because -0.0 exists and leads to weird behavior with rand()
+			uint floatBitsToUintFixed(float n) {
+				return n == -0.0 ? floatBitsToUint(0.0) : floatBitsToUint(n);
+			}
+			
 			float rand(float a) {
-				return float(_hash(floatBitsToUint(a))) / 4294967296.0;
+				return float(_hash(floatBitsToUintFixed(a))) / 4294967296.0;
 			}
 			
 			float rand(float a, float b) {
-				uint res = _hash(floatBitsToUint(a));
-				res = _hash(res ^ floatBitsToUint(b));
+				uint res = _hash(floatBitsToUintFixed(a));
+				res = _hash(res ^ floatBitsToUintFixed(b));
 				return float(res) / 4294967296.0;
 			}
 			
 			float rand(float a, float b, float c) {
-				uint res = _hash(floatBitsToUint(a));
-				res = _hash(res ^ floatBitsToUint(b));
-				res = _hash(res ^ floatBitsToUint(c));
+				uint res = _hash(floatBitsToUintFixed(a));
+				res = _hash(res ^ floatBitsToUintFixed(b));
+				res = _hash(res ^ floatBitsToUintFixed(c));
 				return float(res) / 4294967296.0;
 			}
 			
 			float rand(float a, float b, float c, float d) {
-				uint res = _hash(floatBitsToUint(a));
-				res = _hash(res ^ floatBitsToUint(b));
-				res = _hash(res ^ floatBitsToUint(c));
-				res = _hash(res ^ floatBitsToUint(d));
+				uint res = _hash(floatBitsToUintFixed(a));
+				res = _hash(res ^ floatBitsToUintFixed(b));
+				res = _hash(res ^ floatBitsToUintFixed(c));
+				res = _hash(res ^ floatBitsToUintFixed(d));
 				return float(res) / 4294967296.0;
 			}
 			
@@ -151,6 +155,7 @@
 			float _func(vec2 _p) {
 				x = _p.x;
 				y = _p.y;
+				#line 1
 				return (FUNCTION);
 			}
 			
@@ -234,12 +239,11 @@
 				return false;
 			}
 			
-			vec4 _valuePlotMethod(vec2 pix) {
+			vec4 _colorMapMethod(vec2 pix) {
 				float val = _func(_pixToCoord(pix));
 				if(isnan(val)) {
-					bool isPositive = ((uint(gl_FragCoord.x) >> 2 ^ uint(gl_FragCoord.y) >> 2) & 1u) == 0u;
 					vec3 avgCol = (_color + _invColor) / 2.0;
-					if(isPositive) {
+					if(((uint(gl_FragCoord.x) >> 2 ^ uint(gl_FragCoord.y) >> 2) & 1u) == 0u) {
 						return vec4(avgCol * 0.5 + 0.5, 0.9);
 					}
 					return vec4(avgCol * 0.5, 0.9);

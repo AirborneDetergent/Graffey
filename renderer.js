@@ -12,6 +12,7 @@ class Renderer {
 		this.gl = this.glCanvas.getContext('webgl2', {
 			antialias: false,
 		});
+		this.compiler.gl = this.gl;
 		
 		this.gl.enable(this.gl.BLEND);
 		
@@ -28,8 +29,8 @@ class Renderer {
 				gl_Position = vec4(position, 0, 1);
 			}
 		`;
-		this.showProgram = this.compileProgram(vertSource, document.querySelector('#show-shader').textContent);
-		this.accumProgram = this.compileProgram(vertSource, document.querySelector('#accum-shader').textContent);
+		this.showProgram = this.compiler.compileProgram(vertSource, document.querySelector('#show-shader').textContent);
+		this.accumProgram = this.compiler.compileProgram(vertSource, document.querySelector('#accum-shader').textContent);
 		
 		this.targBuffer = this.gl.createFramebuffer();
 		this.accumBuffer = this.gl.createFramebuffer();
@@ -40,43 +41,6 @@ class Renderer {
 		this.randomizeSeed();
 		
 		this.fixSize(true);
-	}
-	
-	compileProgram(vertSource, fragSource) {
-		let vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
-		this.gl.shaderSource(vertShader, vertSource);
-		this.gl.compileShader(vertShader);
-		if (!this.gl.getShaderParameter(vertShader, this.gl.COMPILE_STATUS)) {
-			const errorLog = this.gl.getShaderInfoLog(fragShader);
-			console.error('Vertex Shader:', errorLog);
-			return null;
-		}
-		let fragShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-		this.gl.shaderSource(fragShader, fragSource);
-		this.gl.compileShader(fragShader);
-		
-		if (!this.gl.getShaderParameter(fragShader, this.gl.COMPILE_STATUS)) {
-			const errorLog = this.gl.getShaderInfoLog(fragShader);
-			console.error('Fragment Shader:', errorLog);
-			return null;
-		}
-		
-		let program = this.gl.createProgram();
-
-		this.gl.attachShader(program, vertShader);
-		this.gl.attachShader(program, fragShader);
-		this.gl.linkProgram(program);
-		
-		if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
-			console.log('Program Creation:', this.gl.getProgramInfoLog(program));
-			return null;
-		}
-		
-		let pos = this.gl.getAttribLocation(program, 'position');
-		this.gl.vertexAttribPointer(pos, 2, this.gl.FLOAT, false, 0, 0);
-		this.gl.enableVertexAttribArray(pos);
-		
-		return program;
 	}
 	
 	randomizeSeed() {
@@ -92,12 +56,11 @@ class Renderer {
 				gl_Position = vec4(position, 0, 1);
 			}
 		`;
-		let source = document.querySelector('#plot-shader').textContent;
+		let source = document.querySelector('#color-map-shader').textContent;
 		let method;
 		[source, method] = this.compiler.compile(equaContent, source);
 		
-		let program = this.compileProgram(vertSource, source);
-		if(program === null) return [null, null];
+		let program = this.compiler.compileProgram(vertSource, source);
 		
 		return [program, method];
 	}
@@ -144,14 +107,14 @@ class Renderer {
 				equa.isModified = false;
 				this.accumFrames = 0;
 				[equa.program, equa.method] = this.makeShaderProgram(this.equaTable.equations[id].content);
-				if(equa.program === null) {
-					equaTable.changeIcon(id, 'bi-exclamation-diamond');
+				if(typeof equa.program == 'string') {
+					equaTable.changeIcon(id, 'bi-exclamation-diamond', equa.program);
 				} else {
 					equaTable.resetIcon(id);
 				}
 			}
-			if(equa.program !== null && !equa.isHidden) {
-				if(equa.method == 'valuePlotMethod') {
+			if(typeof equa.program != 'string' && !equa.isHidden) {
+				if(equa.method == 'colorMapMethod') {
 					this.renderEquation(equa);
 				} else {
 					renderAfter.push(equa);
