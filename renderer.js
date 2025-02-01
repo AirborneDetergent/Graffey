@@ -39,13 +39,19 @@ class Renderer {
 		this.drawIsolines = true;
 		this.accumFrames = 0;
 		this.randomizeSeed();
+		this.wipeAccum = false;
 		
 		this.fixSize(true);
 	}
 	
+	resetAccumulation() {
+		this.accumFrames = 0;
+		this.wipeAccum = true;
+	}
+	
 	randomizeSeed() {
 		this.randomSeed = Math.floor(Math.random() * 4294967296);
-		this.accumFrames = 0;
+		this.resetAccumulation();
 	}
 	
 	makeShaderProgram(equaContent) {
@@ -84,8 +90,30 @@ class Renderer {
 		this.glCanvas.style.width = this.display.canvas.offsetWidth + 'px';
 		this.glCanvas.style.height = this.display.canvas.offsetHeight + 'px';
 		this.targTex = this.genBufferTexture(this.targBuffer, this.gl.RGBA8, this.gl.RGBA, this.gl.UNSIGNED_BYTE);
-		this.accumTex = this.genBufferTexture(this.accumBuffer, this.gl.RGBA16UI, this.gl.RGBA_INTEGER, this.gl.UNSIGNED_SHORT);
-		this.accumTexSwap = this.genBufferTexture(this.accumBuffer, this.gl.RGBA16UI, this.gl.RGBA_INTEGER, this.gl.UNSIGNED_SHORT);
+		this.accumTex = this.genBufferTexture(this.accumBuffer, this.gl.RGBA32UI, this.gl.RGBA_INTEGER, this.gl.UNSIGNED_INT);
+		this.accumTexSwap = this.genBufferTexture(this.accumBuffer, this.gl.RGBA32UI, this.gl.RGBA_INTEGER, this.gl.UNSIGNED_INT);
+	}
+	
+	updateCompiledShaders() {
+		if(this.compiler.forceRecompile) {
+			this.compiler.compileFunctions(this.equaTable);
+			this.resetAccumulation();
+		}
+		for(let id in this.equaTable.equations) {
+			let equa = this.equaTable.equations[id];
+			if(equa.isFunction) continue;
+			if(equa.isModified || this.compiler.forceRecompile) {
+				equa.isModified = false;
+				this.resetAccumulation();
+				[equa.program, equa.method] = this.makeShaderProgram(this.equaTable.equations[id].content);
+				if(typeof equa.program == 'string') {
+					equaTable.changeIcon(id, 'bi-exclamation-diamond', equa.program);
+				} else {
+					equaTable.resetIcon(id);
+				}
+			}
+		}
+		this.compiler.forceRecompile = false;
 	}
 	
 	renderFrame() {
@@ -95,24 +123,11 @@ class Renderer {
 		this.gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
 		this.gl.clearColor(0, 0, 0, 0);
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-		if(this.compiler.forceRecompile) {
-			this.compiler.compileFunctions(this.equaTable);
-			this.accumFrames = 0;
-		}
+		
 		let renderAfter = [];
 		for(let id in this.equaTable.equations) {
 			let equa = this.equaTable.equations[id];
 			if(equa.isFunction) continue;
-			if(equa.isModified || this.compiler.forceRecompile) {
-				equa.isModified = false;
-				this.accumFrames = 0;
-				[equa.program, equa.method] = this.makeShaderProgram(this.equaTable.equations[id].content);
-				if(typeof equa.program == 'string') {
-					equaTable.changeIcon(id, 'bi-exclamation-diamond', equa.program);
-				} else {
-					equaTable.resetIcon(id);
-				}
-			}
 			if(typeof equa.program != 'string' && !equa.isHidden) {
 				if(equa.method == 'colorMapMethod') {
 					this.renderEquation(equa);
@@ -124,15 +139,19 @@ class Renderer {
 		for(let equa of renderAfter) {
 			this.renderEquation(equa);
 		}
-		this.compiler.forceRecompile = false;
-		this.gl.blendEquation(this.gl.FUNC_ADD);
 	}
 	
 	accumulateFrame() {
+		this.gl.blendEquation(this.gl.FUNC_ADD);
 		this.gl.blendFunc(this.gl.ONE, this.gl.ZERO);
 		this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.accumBuffer);
 		this.gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
 		this.gl.useProgram(this.accumProgram);
+		
+		if(this.wipeAccum) {
+			this.gl.clearBufferuiv(this.gl.COLOR, 0, new Uint32Array([0, 0, 0, 0]));
+			this.wipeAccum = false;
+		}
 		
 		let tmp = this.accumTexSwap;
 		this.accumTexSwap = this.accumTex;
@@ -168,6 +187,8 @@ class Renderer {
 		
 		let uResolution = this.gl.getUniformLocation(this.showProgram, 'resolution');
 		this.gl.uniform2f(uResolution, this.display.width, this.display.height);
+		let uSamples = this.gl.getUniformLocation(this.showProgram, 'samples');
+		this.gl.uniform1f(uSamples, this.accumFrames);
 		
 		let uImage = this.gl.getUniformLocation(this.showProgram, 'image');
 		this.gl.activeTexture(this.gl.TEXTURE0);	
@@ -179,13 +200,16 @@ class Renderer {
 	
 	render(dt) {
 		if(this.display.camera.hasChanged()) {
-			this.accumFrames = 0;
+			this.resetAccumulation();
 		}
-		this.fixSize();
-		this.renderFrame();
-		this.accumulateFrame();
-		this.showAccumulatedGraph();
-		this.display.camera.updateOldBounds();
+		this.updateCompiledShaders();
+		if(this.accumFrames < 1024) {
+			this.fixSize();
+			this.renderFrame();
+			this.accumulateFrame();
+			this.showAccumulatedGraph();
+			this.display.camera.updateOldBounds();
+		}
 	}
 	
 	renderEquation(equa) {

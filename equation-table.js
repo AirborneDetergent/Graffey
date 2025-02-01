@@ -88,7 +88,7 @@ class EquationTable {
 				this.compiler.forceRecompile = true;
 			}
 			if(!this.equations[equa.id].isHidden) {
-				this.renderer.accumFrames = 0;
+				this.renderer.resetAccumulation();
 			}
 			equa.remove();
 			delete this.equations[equa.id];
@@ -97,7 +97,7 @@ class EquationTable {
 		eqButton.onclick = () => {
 			this.equations[equa.id].isHidden = !this.equations[equa.id].isHidden;
 			eqButton.classList.toggle('opacity-25', this.equations[equa.id].isHidden);
-			this.renderer.accumFrames = 0;
+			this.renderer.resetAccumulation();
 		};
 		let content = equa.querySelector('#equation-content');
 		content.value = contentString;

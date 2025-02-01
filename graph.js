@@ -56,11 +56,12 @@ class Display {
 	}
 	
 	render(dt) {
-		this.canvas.width = this.width;
-		this.canvas.height = this.height;
+		if(this.canvas.width != this.width || this.canvas.height != this.height) {;
+			this.canvas.width = this.width;
+			this.canvas.height = this.height;
+		}
 		this.camera.updateSmoothZoom(dt);
-		this.ctx.fillStyle = toColor(0);
-		this.ctx.fillRect(0, 0, this.width, this.height);
+		this.ctx.clearRect(0, 0, this.width, this.height);
 		this.drawGraphBackground();
 	}
 	

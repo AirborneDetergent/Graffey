@@ -69,9 +69,11 @@
 				vec4 accumColor = vec4(texture(accum, uv));
 				vec4 frameColor = texture(frame, uv);
 				frameColor.rgb = pow(frameColor.rgb, vec3(2.2));
-				frameColor *= 65535.0;
-				float alpha = opacity == 1.0 ? frameColor.a : max(accumColor.a, frameColor.a);
-				fragColor = uvec4(accumColor.rgb * (1.0 - opacity) + frameColor.rgb * opacity, alpha);
+				frameColor *= 65536.0;
+				//float alpha = opacity == 1.0 ? frameColor.a : max(accumColor.a, frameColor.a);
+				//alpha = max(accumColor.a, frameColor.a);
+				//fragColor = uvec4(accumColor * (1.0 - opacity) + frameColor * opacity);
+				fragColor = uvec4(accumColor + frameColor);
 			}
 		</script>
 		
@@ -80,14 +82,16 @@
 			
 			uniform highp usampler2D image;
 			uniform vec2 resolution;
+			uniform float samples;
 			
 			out vec4 fragColor;
 			
 			void main() {
 				vec2 uv = gl_FragCoord.xy / resolution;
 				uvec4 ucol = texture(image, uv);
-				vec4 col = vec4(ucol) / 65535.0;
+				vec4 col = vec4(ucol) / 65536.0 / samples;
 				col.rgb = pow(col.rgb, vec3(1.0/2.2));
+				col.a = 1.0;
 				fragColor = col;
 			}
 		</script>

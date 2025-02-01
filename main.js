@@ -109,7 +109,7 @@ function toggleIsolines() {
 	let button = document.querySelector('#toggle-isolines');
 	renderer.drawIsolines = !renderer.drawIsolines;
 	button.classList.toggle('opacity-25', !renderer.drawIsolines);
-	renderer.accumFrames = 0;
+	renderer.resetAccumulation();
 }
 
 function render() {

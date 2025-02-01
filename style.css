@@ -14,6 +14,8 @@
 	height: 100%;
 	display: block;
 	margin: 0;
+	z-index: 999;
+	mix-blend-mode: screen;
 }
 
 #container {
@@ -30,8 +32,8 @@
 	display: block;
 	margin: 0;
 	position: absolute;
-	z-index: 999;
 	pointer-events: none;
+	/*mix-blend-mode: screen;*/
 }
 
 #equation-container {
