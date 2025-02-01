@@ -33,7 +33,6 @@
 	margin: 0;
 	position: absolute;
 	pointer-events: none;
-	/*mix-blend-mode: screen;*/
 }
 
 #equation-container {

@@ -118,8 +118,8 @@ class Renderer {
 	
 	renderFrame() {
 		this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.targBuffer);
-		this.gl.blendFuncSeparate(this.gl.ONE, this.gl.ONE, this.gl.ONE, this.gl.ONE);
-		this.gl.blendEquationSeparate(this.gl.FUNC_ADD, this.gl.MAX);
+		this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
+		this.gl.blendEquation(this.gl.FUNC_ADD);
 		this.gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
 		this.gl.clearColor(0, 0, 0, 0);
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
@@ -142,8 +142,6 @@ class Renderer {
 	}
 	
 	accumulateFrame() {
-		this.gl.blendEquation(this.gl.FUNC_ADD);
-		this.gl.blendFunc(this.gl.ONE, this.gl.ZERO);
 		this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.accumBuffer);
 		this.gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
 		this.gl.useProgram(this.accumProgram);
