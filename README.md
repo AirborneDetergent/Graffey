@@ -45,4 +45,4 @@ pi = 3.1415926536
 tau = 6.2831853072  
 e = 2.7182818285  
 
-`rand()` accepts 1 to 4 arguments and returns a pseudo-random number between 0 and 1 that will be the same any time the exact same arguments are entered. If needed, make use of GLSL's built-in `round()` function to make the results consistent, like `y=rand(round(x))`. This function can be re-randomized by clicking the dice button. It is important to note that `rand()` is specifically designed to treat -0.0 and 0.0 as the same value.
+`rand()` accepts 0 to 4 arguments and returns a pseudo-random number between 0 and 1 that will be the same any time the exact same arguments are entered. If needed, make use of GLSL's built-in `round()` function to make the results consistent, like `y=rand(round(x))`. If no arguments are given, it will return the next number in a random sequence each time it is called. This function can be re-randomized by clicking the dice button. It is important to note that `rand()` is specifically designed to treat -0.0 and 0.0 as the same value.

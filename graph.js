@@ -66,7 +66,7 @@ class Display {
 	}
 	
 	drawGraphBackground() {
-		const shades = [8, 16, 32, 64, 128];
+		const shades = [12, 24, 48, 96, 192];
 		this.ctx.translate(0.5, 0.5);
 		// max 5
 		const GRID_COUNT = 3;

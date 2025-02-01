@@ -111,6 +111,7 @@
 			out vec4 _fragColor;
 			
 			float x, y;
+			uint _randState;
 			
 			uint _hash(uint n) {
 				n ^= _seed;
@@ -125,6 +126,11 @@
 			// Because -0.0 exists and leads to weird behavior with rand()
 			uint floatBitsToUintFixed(float n) {
 				return n == -0.0 ? floatBitsToUint(0.0) : floatBitsToUint(n);
+			}
+			
+			float rand() {
+				_randState = _hash(_randState);
+				return float(_randState) / 4294967296.0;
 			}
 			
 			float rand(float a) {
@@ -157,6 +163,7 @@
 			float _func(vec2 _p) {
 				x = _p.x;
 				y = _p.y;
+				_randState = 0u;
 				#line 1
 				return (FUNCTION);
 			}
@@ -263,8 +270,8 @@
 			
 			void main() {
 				vec2 offset = vec2(
-					rand(gl_FragCoord.x, gl_FragCoord.y, _curTime) - 0.5,
-					rand(gl_FragCoord.x, gl_FragCoord.y, _curTime + 1238.2737) - 0.5
+					rand(gl_FragCoord.x - 3.37812, gl_FragCoord.y + 5.23477, _curTime) - 0.5,
+					rand(gl_FragCoord.x + 7.47238, gl_FragCoord.y - 2.64903, _curTime + 1238.2737) - 0.5
 				);
 				vec4 col = _(METHOD)(gl_FragCoord.xy + offset * (_useJitter ? 1.0 : 0.01));
 				col.rgb = pow(col.rgb, vec3(1.0 / 2.2));
