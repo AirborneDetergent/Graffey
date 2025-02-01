@@ -14,11 +14,11 @@
 	<template id="equation">
 		<tr>
 			<!-- The first class in the button MUST be an icon, as it gets changed in code -->
-			<td><button id="equation-button" class="bi-graph-up bi nohover btn fs-3"></button></td>
+			<td><button id="equation-button" class="bi-graph-up bi nohover btn fs-3 px-1"></button></td>
 			<td class="w-100">
 				<textarea id="equation-content" rows="2" type="text" class="form-control" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
 			</td>
-			<td class="w-auto"><button title="Delete Equation" id="equation-delete" class="nohover btn text-danger bi bi-x-lg fs-5"></button></td>
+			<td class="w-auto"><button title="Delete Equation" id="equation-delete" class="nohover btn text-danger bi bi-x-lg fs-5 px-1"></button></td>
 		</tr>
 	</template>
 	
@@ -26,13 +26,15 @@
 		<div id="container" class="bg-dark-subtle">
 			<div id="toolbar-equation-container">
 				<div class="w-100 border-bottom border-3 bg-dark-subtle">
-					<button title="Reset Viewport" onclick="display.resetCamera()" class="bi bi-house btn text-info nohover fs-3" style="float: right;"></button>
-					<button title="Make Aspect Ratio 1:1" onclick="display.camera.fixAspectRatio()" class="bi bi-aspect-ratio btn text-success nohover fs-3" style="float: right;"></button>
-					<button id="toggle-isolines" title="Toggle Isolines" onclick="toggleIsolines()" class="bi bi-radar btn text-light nohover fs-3" style="float: right;"></button>
-					<button title="Randomize Seed" onclick="renderer.randomizeSeed()" class="bi bi-dice-6 btn nohover fs-3" style="float: right; color: #D08FD6"></button>
-					<button title="Save Graph" onclick="save()" class="bi bi-floppy btn text-primary-emphasis nohover fs-3"></button>
-					<button title="Load Graph" onclick="load()" class="bi bi-upload btn text-warning nohover fs-3"></button>
-					<button title="Delete Saved Graph" onclick="unsave()" class="bi bi-trash btn text-danger nohover fs-3"></button>
+					<button title="Save Graph" onclick="save()" class="bi bi-floppy btn text-primary-emphasis nohover fs-3 pe-1"></button>
+					<button title="Load Graph" onclick="load()" class="bi bi-upload btn text-warning nohover fs-3 px-1"></button>
+					<button title="Delete Saved Graph" onclick="unsave()" class="bi bi-trash btn text-danger nohover fs-3 px-1"></button>
+					
+					<button title="Reset Viewport" onclick="display.resetCamera()" class="bi bi-house btn text-info nohover fs-3 ps-1" style="float: right;"></button>
+					<button title="Make Aspect Ratio 1:1" onclick="display.camera.fixAspectRatio()" class="bi bi-aspect-ratio btn text-success nohover fs-3 px-1" style="float: right;"></button>
+					<button id="toggle-isolines" title="Toggle Isolines" onclick="toggleIsolines()" class="bi bi-radar btn text-light nohover fs-3 px-1" style="float: right;"></button>
+					<button title="Randomize Seed" onclick="renderer.randomizeSeed()" class="bi bi-dice-6 btn nohover fs-3 px-1" style="float: right; color: #D08FD6"></button>
+					<a title="" href="https://github.com/AirborneDetergent/Graffey#graffey" target="_blank" class="bi bi-question-lg btn nohover fs-3 px-1" style="float: right;"></a>
 				</div>
 				<div id="equation-container" class="border-end d-flex flex-column">
 					<table id="equation-table" class="table align-middle table-sm">
@@ -244,7 +246,7 @@
 				if(isnan(val)) {
 					vec3 avgCol = (_color + _invColor) / 2.0;
 					if(((uint(gl_FragCoord.x) >> 2 ^ uint(gl_FragCoord.y) >> 2) & 1u) == 0u) {
-						return vec4(avgCol * 0.5 + 0.5, 0.9);
+						return vec4(avgCol * 0.75 + 0.25, 0.9);
 					}
 					return vec4(avgCol * 0.5, 0.9);
 				}
