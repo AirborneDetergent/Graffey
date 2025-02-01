@@ -77,7 +77,7 @@ class EquationTable {
 		}
 	}
 	
-	addEquation(r, g, b, ir, ig, ib, angle, contentString, id) {
+	addEquation(r, g, b, ir, ig, ib, angle, contentString, id, focus=false) {
 		let equa = this.newEquation(r, g, b);
 		this.table.appendChild(equa);
 		equa = this.table.children[this.table.children.length - 1];
@@ -129,11 +129,14 @@ class EquationTable {
 		if(e.isHidden) {
 			eqButton.className = eqButton.className + ' opacity-25';
 		}
+		if(focus) {
+			content.focus();
+		}
 	}
 	
-	makeEquation() {
+	makeEquation(focus=false) {
 		let [r, g, b, angle] = this.randomColor();
 		let [ir, ig, ib] = this.colorFromTheta((angle + 1/3) * Math.PI * 2);
-		this.addEquation(r, g, b, ir, ig, ib, angle, '', `equation${this.nextId++}`);
+		this.addEquation(r, g, b, ir, ig, ib, angle, '', `equation${this.nextId++}`, focus);
 	}
 }

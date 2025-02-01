@@ -34,14 +34,15 @@
 					<button title="Make Aspect Ratio 1:1" onclick="display.camera.fixAspectRatio()" class="bi bi-aspect-ratio btn text-success nohover fs-3 px-1" style="float: right;"></button>
 					<button id="toggle-isolines" title="Toggle Isolines" onclick="toggleIsolines()" class="bi bi-radar btn text-light nohover fs-3 px-1" style="float: right;"></button>
 					<button title="Randomize Seed" onclick="renderer.randomizeSeed()" class="bi bi-dice-6 btn nohover fs-3 px-1" style="float: right; color: #D08FD6"></button>
-					<a title="" href="https://github.com/AirborneDetergent/Graffey#graffey" target="_blank" class="bi bi-question-lg btn nohover fs-3 px-1" style="float: right;"></a>
+					<button title="Settings" onclick="showSettings()" class="bi bi-gear btn text-success-emphasis nohover fs-3 px-1" style="float: right;"></button>
+					<a title="" href="https://github.com/AirborneDetergent/Graffey#graffey" target="_blank" class="bi bi-question-lg btn nohover fs-3 px-0" style="float: right; color: #FF8800;"></a>
 				</div>
 				<div id="equation-container" class="border-end d-flex flex-column">
 					<table id="equation-table" class="table align-middle table-sm">
 						<!-- Table does not generate a <tbody> unless it has something in it -->
 						<tr id="ignore"></tr>
 					</table>
-					<div title="Add New Equation" onclick="equaTable.makeEquation()" class="h-100">
+					<div title="Add New Equation" onclick="equaTable.makeEquation(true)" class="h-100">
 						<button class="nohover btn fs-3 text-primary bi-plus-lg position-relative start-50 translate-middle"></button>
 					</div>
 				</div>

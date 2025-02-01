@@ -38,6 +38,7 @@ class Renderer {
 		this.startTime = new Date().getTime() / 1000;
 		this.drawIsolines = true;
 		this.accumFrames = 0;
+		this.maxAccumFrames = 1024;
 		this.randomizeSeed();
 		this.wipeAccum = false;
 		
@@ -201,7 +202,7 @@ class Renderer {
 			this.resetAccumulation();
 		}
 		this.updateCompiledShaders();
-		if(this.accumFrames < 1024) {
+		if(this.accumFrames < this.maxAccumFrames) {
 			this.fixSize();
 			this.renderFrame();
 			this.accumulateFrame();

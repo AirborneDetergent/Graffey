@@ -16,7 +16,7 @@ class PerfMeter {
 		if(sinceUpdate >= 1000) {
 			let fps = this.frameCount / sinceUpdate * 1000;
 			this.lastUpdate = now;
-			this.element.textContent = `${fps.toFixed(2)} FPS\r\n${this.peak}ms peak`;
+			this.element.textContent = `${fps.toFixed(2)} FPS\r\n${this.peak}ms peak\r\n${renderer.accumFrames}/${renderer.maxAccumFrames}`;
 			this.frameCount = 0;
 			this.peak = 0;
 		}
@@ -122,7 +122,7 @@ function render() {
 let compiler = new Compiler();
 
 let equaTable = new EquationTable(compiler);
-equaTable.makeEquation();
+equaTable.makeEquation(true);
 
 let display = new Display();
 
