@@ -103,6 +103,8 @@ function load(name) {
 	return true;
 }
 
+let prevEnterHandler = null;
+
 function initModal(text, callback, buttonType) {
 	getSavedGraphs();
 	let title = document.querySelector('#io-modal-title');
@@ -116,6 +118,18 @@ function initModal(text, callback, buttonType) {
 		callback(input.value);
 	}
 	let modal = new bootstrap.Modal(document.querySelector('#io-modal'));
+	let enterHandler = (e) => {
+		if(e.key == 'Enter') {
+			e.preventDefault();
+			callback(input.value);
+			modal.hide();
+		}
+	}
+	if(prevEnterHandler) {
+		input.removeEventListener('keypress', prevEnterHandler);
+	}
+	input.addEventListener('keypress', enterHandler);
+	prevEnterHandler = enterHandler;
 	modal.show();
 	input.focus();
 }
