@@ -16,26 +16,55 @@
 			<!-- The first class in the button MUST be an icon, as it gets changed in code -->
 			<td><button id="equation-button" class="bi-graph-up bi nohover btn fs-3 px-1"></button></td>
 			<td class="w-100">
-				<textarea id="equation-content" rows="2" type="text" class="form-control" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+				<textarea id="equation-content" rows="2" type="text" class="form-control px-0" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
 			</td>
 			<td class="w-auto"><button title="Delete Equation" id="equation-delete" class="nohover btn text-danger bi bi-x-lg fs-5 px-1"></button></td>
 		</tr>
 	</template>
 	
+	<template id="io-table-row">
+		<tr><td>(IO Table Entry)</td></tr>
+	</template>
+	
+	<div class="modal" id="io-modal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 id="io-modal-title" class="modal-title fs-4">(IO Modal Title)</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<div style="max-height: 50vh; overflow-y: scroll;">
+						<table id="io-modal-table" class="table table-hover align-middle table-sm">
+							<tbody id="io-modal-tbody">
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<div class="d-flex w-100">
+						<input id="io-modal-input" type="text" class="form-control me-3" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+						<button id="io-modal-button" type="button" class="btn text-nowrap" data-bs-dismiss="modal" style="float: right;">(IO Modal Button)</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
 	<body style="overflow: hidden">
 		<div id="container" class="bg-dark-subtle">
 			<div id="toolbar-equation-container">
 				<div class="w-100 border-bottom border-3 bg-dark-subtle">
-					<button title="Save Graph" onclick="save()" class="bi bi-floppy btn text-primary-emphasis nohover fs-3 pe-1"></button>
-					<button title="Load Graph" onclick="load()" class="bi bi-upload btn text-warning nohover fs-3 px-1"></button>
-					<button title="Delete Saved Graph" onclick="unsave()" class="bi bi-trash btn text-danger nohover fs-3 px-1"></button>
+					<button title="Save Graph" onclick="initModal('Save', save, 'primary')" class="bi bi-floppy btn text-primary-emphasis nohover fs-3 pe-1"></button>
+					<button title="Load Graph" onclick="initModal('Load', load, 'warning')" class="bi bi-upload btn text-warning nohover fs-3 px-1"></button>
+					<button title="Delete Saved Graph" onclick="initModal('Delete', unsave, 'danger')" class="bi bi-trash btn text-danger nohover fs-3 px-1"></button>
 					
 					<button title="Reset Viewport" onclick="display.resetCamera()" class="bi bi-house btn text-info nohover fs-3 ps-1" style="float: right;"></button>
 					<button title="Make Aspect Ratio 1:1" onclick="display.camera.fixAspectRatio()" class="bi bi-aspect-ratio btn text-success nohover fs-3 px-1" style="float: right;"></button>
 					<button id="toggle-isolines" title="Toggle Isolines" onclick="toggleIsolines()" class="bi bi-radar btn text-light nohover fs-3 px-1" style="float: right;"></button>
 					<button title="Randomize Seed" onclick="renderer.randomizeSeed()" class="bi bi-dice-6 btn nohover fs-3 px-1" style="float: right; color: #D08FD6"></button>
-					<button title="Settings" onclick="showSettings()" class="bi bi-gear btn text-success-emphasis nohover fs-3 px-1" style="float: right;"></button>
-					<a title="" href="https://github.com/AirborneDetergent/Graffey#graffey" target="_blank" class="bi bi-question-lg btn nohover fs-3 px-0" style="float: right; color: #FF8800;"></a>
+					<button title="Settings (NON-FUNCTIONAL)" onclick="console.log('open settings')" data-bs-toggle="modal" data-bs-target="#settings-modal" class="bi bi-gear btn text-success-emphasis nohover fs-3 px-1" style="float: right;"></button>
+					<a title="Documentation and GitHub Page" href="https://github.com/AirborneDetergent/Graffey#graffey" target="_blank" class="bi bi-question-lg btn nohover fs-3 px-0" style="float: right; color: #FF8800;"></a>
 				</div>
 				<div id="equation-container" class="border-end d-flex flex-column">
 					<table id="equation-table" class="table align-middle table-sm">
@@ -125,7 +154,7 @@
 			}
 			
 			// Because -0.0 exists and leads to weird behavior with rand()
-			uint floatBitsToUintFixed(float n) {
+			uint _floatBitsToUintFixed(float n) {
 				return n == -0.0 ? floatBitsToUint(0.0) : floatBitsToUint(n);
 			}
 			
@@ -135,27 +164,27 @@
 			}
 			
 			float rand(float a) {
-				return float(_hash(floatBitsToUintFixed(a))) / 4294967296.0;
+				return float(_hash(_floatBitsToUintFixed(a))) / 4294967296.0;
 			}
 			
 			float rand(float a, float b) {
-				uint res = _hash(floatBitsToUintFixed(a));
-				res = _hash(res ^ floatBitsToUintFixed(b));
+				uint res = _hash(_floatBitsToUintFixed(a));
+				res = _hash(res ^ _floatBitsToUintFixed(b));
 				return float(res) / 4294967296.0;
 			}
 			
 			float rand(float a, float b, float c) {
-				uint res = _hash(floatBitsToUintFixed(a));
-				res = _hash(res ^ floatBitsToUintFixed(b));
-				res = _hash(res ^ floatBitsToUintFixed(c));
+				uint res = _hash(_floatBitsToUintFixed(a));
+				res = _hash(res ^ _floatBitsToUintFixed(b));
+				res = _hash(res ^ _floatBitsToUintFixed(c));
 				return float(res) / 4294967296.0;
 			}
 			
 			float rand(float a, float b, float c, float d) {
-				uint res = _hash(floatBitsToUintFixed(a));
-				res = _hash(res ^ floatBitsToUintFixed(b));
-				res = _hash(res ^ floatBitsToUintFixed(c));
-				res = _hash(res ^ floatBitsToUintFixed(d));
+				uint res = _hash(_floatBitsToUintFixed(a));
+				res = _hash(res ^ _floatBitsToUintFixed(b));
+				res = _hash(res ^ _floatBitsToUintFixed(c));
+				res = _hash(res ^ _floatBitsToUintFixed(d));
 				return float(res) / 4294967296.0;
 			}
 			
@@ -177,7 +206,7 @@
 				return (p - _bounds.xy) / (_bounds.zw - _bounds.xy) * _resolution;
 			}
 			
-			const vec2[] offsets = vec2[](
+			const vec2[] _offsets = vec2[](
 				vec2(0.0, 1.0),
 				vec2(1.0, 0.0),
 				vec2(0.0, -1.0),
@@ -188,7 +217,7 @@
 				vec2(-1.0, -1.0)
 			);
 			
-			bool testZero(vec2 p1, vec2 p2, float s1, float s2, float vMag) {
+			bool _testZero(vec2 p1, vec2 p2, float s1, float s2, float vMag) {
 				float low = 0.0;
 				float high = 1.0;
 				float guess = 0.5;
@@ -221,29 +250,29 @@
 				float s, v;
 				int i;
 				for(i = 0; i < 8; i++) {
-					p = _pixToCoord(pix + offsets[i]);
+					p = _pixToCoord(pix + _offsets[i]);
 					v = _func(p);
 					s = sign(v);
 					if(s != cs) {
 						break;
 					}
 				}
-				if(i != 8 && testZero(pixCoord, p, cs, s, abs(cv - v))) {
+				if(i != 8 && _testZero(pixCoord, p, cs, s, abs(cv - v))) {
 					return vec4(_color, 1.0);
 				}
 				return vec4(0.0);
 			}
 			
-			float isoRound(float v) {
+			float _isoRound(float v) {
 				v = log2(max(1.0, abs(v))) * sign(v) + sign(v);
 				return (v > 0.0) ? ceil(v) : floor(v);
 			}
 			
 			bool _gridSampleIsolines(vec2 pix, float val) {
-				val = isoRound(val);
+				val = _isoRound(val);
 				for(int i = 0; i < 4; i++) {
-					vec2 p = _pixToCoord(pix + offsets[i]);
-					float v = isoRound(_func(p));
+					vec2 p = _pixToCoord(pix + _offsets[i]);
+					float v = _isoRound(_func(p));
 					if(floor(v) != val) return true;
 				}
 				return false;

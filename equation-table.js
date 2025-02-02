@@ -80,7 +80,7 @@ class EquationTable {
 	addEquation(r, g, b, ir, ig, ib, angle, contentString, id, focus=false) {
 		let equa = this.newEquation(r, g, b);
 		this.table.appendChild(equa);
-		equa = this.table.children[this.table.children.length - 1];
+		equa = this.table.lastElementChild;
 		equa.id = id;
 		let delButton = equa.querySelector('#equation-delete');
 		delButton.onclick = () => {
