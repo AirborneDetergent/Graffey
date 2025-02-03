@@ -137,6 +137,7 @@ class Renderer {
 				}
 			}
 		}
+		this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 		for(let equa of renderAfter) {
 			this.renderEquation(equa);
 		}
@@ -201,7 +202,9 @@ class Renderer {
 		if(this.display.camera.hasChanged()) {
 			this.resetAccumulation();
 		}
-		this.updateCompiledShaders();
+		if(Date.now() - this.equaTable.lastModified > 250) {
+			this.updateCompiledShaders();
+		}
 		if(this.accumFrames < this.maxAccumFrames) {
 			this.fixSize();
 			this.renderFrame();

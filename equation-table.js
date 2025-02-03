@@ -6,6 +6,7 @@ class EquationTable {
 		this.compiler = compiler;
 		/** @type {Renderer} */
 		this.renderer = null;
+		this.lastModified = 0;
 	}
 	
 	newEquation(r, g, b) {
@@ -112,6 +113,7 @@ class EquationTable {
 				this.compiler.forceRecompile = true;
 				this.resetIcon(id);
 			}
+			this.lastModified = Date.now();
 		}
 		if(!this.equations[equa.id]) this.equations[equa.id] = {};
 		let e = this.equations[equa.id];
