@@ -42,7 +42,6 @@ class EquationTable {
 			for(let i = Math.floor(dists.length * minAngle); i < Math.ceil(dists.length * maxAngle); i++) {
 				if(dists[i] > dists[angInd]) angInd = i;
 			}
-			console.log(angInd);
 			angle = angInd / dists.length;
 		} else {
 			angle = Math.random() * (maxAngle - minAngle) + minAngle;

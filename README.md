@@ -12,7 +12,7 @@ Most buttons have tooltips describing what they do when you hover over them with
 
 ## Rendering
 
-Like most online graphing calculators, Graffey is capable of graphing arbitrary equations. It will render lines and curves using the primary color of the equation.
+Like most online graphing calculators, Graffey is capable of graphing arbitrary equations. It will render lines and curves using the primary color.
 
 Graffey also has a colormap rendering mode that can be used to render expressions. Values with a greater magnitude are represented using brighter colors, with black being 0. Positive values use the primary color and negative values use an otherwise hidden secondary color. NaN is detected and rendered as a checkerboard. This mode also renders white isolines at 0 and every whole positive and negative power of 2 (...-8, -4, -2, -1, 0, 1, 2, 4, 8...).
 

@@ -71,7 +71,6 @@ function load(name) {
 	if(!json) return false;
 	for(let i = equaTable.table.children.length - 1; i >= 0; i--) {
 		let equa = equaTable.table.children[i];
-		console.log(equa.id);
 		if(equa.id == 'ignore') continue;
 		equa.remove();
 		delete equaTable.equations[equa.id];

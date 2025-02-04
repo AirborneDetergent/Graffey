@@ -33,7 +33,7 @@ class Compiler {
 		
 		if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
 			let errorLog = this.gl.getProgramInfoLog(program);
-			console.log('Program Creation:', errorLog);
+			console.error('Program Creation:', errorLog);
 			return errorLog;
 		}
 		
@@ -50,7 +50,6 @@ class Compiler {
 		let defs = '';
 		for(let id in equaTable.equations) {
 			let equa = equaTable.equations[id];
-			console.log(equa.content);
 			if(equa.isFunction) {
 				let func = equa.content;
 				let ind = func.indexOf('=>');
