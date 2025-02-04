@@ -7,6 +7,8 @@ class EquationTable {
 		/** @type {Renderer} */
 		this.renderer = null;
 		this.lastModified = 0;
+		/** @type {ConfigModal} */
+		this.configModal = null;
 	}
 	
 	newEquation(r, g, b) {
@@ -17,6 +19,8 @@ class EquationTable {
 	}
 	
 	randomColor() {
+		let minAngle = 0.175;
+		let maxAngle = 0.95;
 		let dists = new Array(512);
 		dists.fill(512);
 		let preExisting = false;
@@ -34,13 +38,14 @@ class EquationTable {
 				let wave = dists[(i + 1 + dists.length * 2) % dists.length] + 1;
 				if(dists[i % dists.length] > wave) dists[i % dists.length] = wave;
 			}
-			let angInd = 0;
-			for(let i = 0; i < dists.length; i++) {
+			let angInd = Math.round((minAngle * dists.length + maxAngle * dists.length) / 2);
+			for(let i = Math.floor(dists.length * minAngle); i < Math.ceil(dists.length * maxAngle); i++) {
 				if(dists[i] > dists[angInd]) angInd = i;
 			}
+			console.log(angInd);
 			angle = angInd / dists.length;
 		} else {
-			angle = Math.random();
+			angle = Math.random() * (maxAngle - minAngle) + minAngle;
 		}
 		let [r, g, b] = this.colorFromTheta(angle * Math.PI * 2);
 		return [r, g, b, angle];
@@ -68,17 +73,22 @@ class EquationTable {
 	}
 	
 	resetIcon(id) {
+		let iconMsg = 'Left Click: Toggle Rendering\nRight Click: Open Config';
 		let equa = this.equations[id];
-		if(equa.isFunction) {
-			this.changeIcon(id, 'bi-braces-asterisk', 'Toggle Rendering');
-		} else if(equa.method == 'gridSampleMethod') {
-			this.changeIcon(id, 'bi-graph-up', 'Toggle Rendering');
-		} else if(equa.method == 'colorMapMethod') {
-			this.changeIcon(id, 'bi-grid-3x3', 'Toggle Rendering');
+		if(equa.content == '') {
+			this.changeIcon(id, 'bi-graph-up', iconMsg);
+		} else {
+			if(equa.isFunction) {
+				this.changeIcon(id, 'bi-braces-asterisk', iconMsg);
+			} else if(equa.method == 'gridSampleMethod') {
+				this.changeIcon(id, 'bi-graph-up', iconMsg);
+			} else if(equa.method == 'colorMapMethod') {
+				this.changeIcon(id, 'bi-grid-3x3', iconMsg);
+			}
 		}
 	}
 	
-	addEquation(r, g, b, ir, ig, ib, angle, contentString, id, focus=false) {
+	addEquation(r, g, b, ir, ig, ib, angle, secAngle, contentString, id, focus=false) {
 		let equa = this.newEquation(r, g, b);
 		this.table.appendChild(equa);
 		equa = this.table.lastElementChild;
@@ -100,6 +110,10 @@ class EquationTable {
 			eqButton.classList.toggle('opacity-25', this.equations[equa.id].isHidden);
 			this.renderer.resetAccumulation();
 		};
+		eqButton.oncontextmenu = (e) => {
+			e.preventDefault();
+			this.configModal.initModal(equa.id);
+		}
 		let content = equa.querySelector('#equation-content');
 		content.value = contentString;
 		content.oninput = (e) => {
@@ -124,6 +138,7 @@ class EquationTable {
 		e.ig = ig;
 		e.ib = ib;
 		e.angle = angle;
+		e.secAngle = secAngle;
 		e.content = contentString;
 		e.isModified = true;
 		e.isFunction = e.content.indexOf('=>') != -1;
@@ -136,9 +151,31 @@ class EquationTable {
 		}
 	}
 	
+	changeColor(id, angle) {
+		let [r, g, b] = this.colorFromTheta(angle * Math.PI * 2);
+		this.equations[id].r = r;
+		this.equations[id].g = g;
+		this.equations[id].b = b;
+		this.equations[id].angle = angle;
+		let equa = document.getElementById(id);
+		let button = equa.cells[0].firstChild;
+		button.style = `color: rgb(${r}, ${g}, ${b});`;
+		this.renderer.resetAccumulation();
+	}
+	
+	changeSecondaryColor(id, angle) {
+		let [r, g, b] = this.colorFromTheta(angle * Math.PI * 2);
+		this.equations[id].ir = r;
+		this.equations[id].ig = g;
+		this.equations[id].ib = b;
+		this.equations[id].secAngle = angle;
+		this.renderer.resetAccumulation();
+	}
+	
 	makeEquation(focus=false) {
 		let [r, g, b, angle] = this.randomColor();
-		let [ir, ig, ib] = this.colorFromTheta((angle + 1/3) * Math.PI * 2);
-		this.addEquation(r, g, b, ir, ig, ib, angle, '', `equation${this.nextId++}`, focus);
+		let secAngle = (angle + 1/3) % 1;
+		let [ir, ig, ib] = this.colorFromTheta(secAngle * Math.PI * 2);
+		this.addEquation(r, g, b, ir, ig, ib, angle, secAngle, '', `equation${this.nextId++}`, focus);
 	}
 }

@@ -38,7 +38,7 @@ class Renderer {
 		this.startTime = new Date().getTime() / 1000;
 		this.drawIsolines = true;
 		this.accumFrames = 0;
-		this.maxAccumFrames = 1024;
+		this.maxAccumFrames = 1000;
 		this.randomizeSeed();
 		this.wipeAccum = false;
 		
@@ -107,7 +107,7 @@ class Renderer {
 				equa.isModified = false;
 				this.resetAccumulation();
 				[equa.program, equa.method] = this.makeShaderProgram(this.equaTable.equations[id].content);
-				if(typeof equa.program == 'string') {
+				if(typeof equa.program == 'string' && equa.content != '') {
 					equaTable.changeIcon(id, 'bi-exclamation-diamond', equa.program);
 				} else {
 					equaTable.resetIcon(id);

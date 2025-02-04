@@ -3,6 +3,11 @@
 	border: none !important;
 }
 
+.color-select {
+	padding: 30px;
+	border-radius: 10px;
+}
+
 #toolbar-equation-container {
 	display: flex;
 	flex-direction: column;

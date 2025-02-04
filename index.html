@@ -51,6 +51,23 @@
 		</div>
 	</div>
 	
+	<div class="modal" id="config-modal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-4">Config</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<label for="color-range" class="form-label">Primary Color</label>
+					<input id="color-range" type="range" class="form-range color-select" min="0" max="1" step="0.00001">
+					<label for="color-range" class="form-label">Secondary Color</label>
+					<input id="secondary-color-range" type="range" class="form-range color-select" min="0" max="1" step="0.00001">
+				</div>
+			</div>
+		</div>
+	</div>
+	
 	<body style="overflow: hidden">
 		<div id="container" class="bg-dark-subtle">
 			<div id="toolbar-equation-container">
@@ -309,6 +326,7 @@
 			}
 		</script>
 		<script src="equation-table.js"></script>
+		<script src="config-modal.js"></script>
 		<script src="graph.js"></script>
 		<script src="compiler.js"></script>
 		<script src="renderer.js"></script>

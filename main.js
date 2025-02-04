@@ -84,7 +84,7 @@ function load(name) {
 		equaTable.nextId = Math.max(idInt, equaTable.nextId);
 		let e = equaTable.equations[id];
 		e.program = null;
-		equaTable.addEquation(e.r, e.g, e.b, e.ir, e.ig, e.ib, e.angle, e.content, id);
+		equaTable.addEquation(e.r, e.g, e.b, e.ir, e.ig, e.ib, e.angle, e.secAngle, e.content, id);
 	}
 	equaTable.nextId++;
 	display.camera.tarMinX = data.minX;
@@ -151,13 +151,13 @@ function render() {
 let compiler = new Compiler();
 
 let equaTable = new EquationTable(compiler);
+let configModal = new ConfigModal(equaTable);
+equaTable.configModal = configModal;
 equaTable.makeEquation(true);
-
 let display = new Display();
-
 let renderer = new Renderer(display, equaTable, compiler);
-
 let perfMeter = new PerfMeter();
+configModal.renderer = renderer;
 
 equaTable.renderer = renderer;
 
