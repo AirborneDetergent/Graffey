@@ -76,7 +76,7 @@ class Display {
 			this.drawGrid(8 - i, i == shades.length - 1);
 		}
 		this.ctx.strokeStyle = toColor(255);
-		this.ctx.lineWidth = 4;
+		this.ctx.lineWidth = 3;
 		this.ctx.beginPath();
 		this.ctx.moveTo(this.camera.ssx(0), 0);
 		this.ctx.lineTo(this.camera.ssx(0), this.height + 1);
