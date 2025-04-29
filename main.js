@@ -52,6 +52,7 @@ function save(name) {
 		maxY: display.camera.maxY,
 		drawIsolines: renderer.drawIsolines,
 		randomSeed: renderer.randomSeed,
+		drawBackground: display.drawBackground
 	}
 	window.localStorage.setItem(name, JSON.stringify(data));
 	return true;
@@ -94,10 +95,13 @@ function load(name) {
 	display.camera.maxX = data.maxX;
 	display.camera.minY = data.minY;
 	display.camera.maxY = data.maxY;
+	display.drawBackground = data.drawBackground !== undefined ? data.drawBackground : true;
 	renderer.drawIsolines = data.drawIsolines;
 	renderer.randomSeed = data.randomSeed;
 	let button = document.querySelector('#toggle-isolines');
 	button.classList.toggle('opacity-25', !renderer.drawIsolines);
+	button = document.querySelector('#toggle-grid');
+	button.classList.toggle('opacity-25', !display.drawBackground);
 	compiler.forceRecompile = true;
 	return true;
 }
@@ -138,6 +142,12 @@ function toggleIsolines() {
 	renderer.drawIsolines = !renderer.drawIsolines;
 	button.classList.toggle('opacity-25', !renderer.drawIsolines);
 	renderer.resetAccumulation();
+}
+
+function toggleGrid() {
+	let button = document.querySelector('#toggle-grid');
+	display.drawBackground = !display.drawBackground;
+	button.classList.toggle('opacity-25', !display.drawBackground);
 }
 
 function render() {

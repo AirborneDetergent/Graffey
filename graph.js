@@ -14,6 +14,7 @@ const DRAG_SCALE = 2
 
 class Display {
 	constructor() {
+		this.drawBackground = true;
 		this.hasResized = false;
 		/** @type {HTMLCanvasElement} */
 		this.canvas = document.getElementById('display');
@@ -62,7 +63,9 @@ class Display {
 		}
 		this.camera.updateSmoothZoom(dt);
 		this.ctx.clearRect(0, 0, this.width, this.height);
-		this.drawGraphBackground();
+		if(this.drawBackground) {
+			this.drawGraphBackground();
+		}
 	}
 	
 	drawGraphBackground() {
