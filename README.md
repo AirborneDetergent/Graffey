@@ -37,7 +37,7 @@ The presence of a semicolon (`;`) will disable preprocessing for the function bo
 	}
 	return sum;
 
-## Available Functions and Constants
+## Available Functions, Constants, and Variables
 
 Because of the minimal preprocessing, math functions that are part of GLSL should all work here. Graffey also provides some extra functions and constants.
 
@@ -46,3 +46,5 @@ tau = 6.2831853072
 e = 2.7182818285  
 
 `rand()` accepts 0 to 4 arguments and returns a pseudo-random number between 0 and 1 that will be the same any time the exact same arguments are entered. If needed, make use of GLSL's built-in `round()` function to make the results consistent, like `y=rand(round(x))`. If no arguments are given, it will return the next number in a random sequence each time it is called. This function can be re-randomized by clicking the dice button. It is important to note that `rand()` is specifically designed to treat -0.0 and 0.0 as the same value.
+
+`time` holds the amount of time, in seconds, since the timer was last reset. This can be done manually and will also occur automatically when recompilation finds `time` present and did not find it last time. Using `time` will prevent temporal accumulation, leading to less pixel-level smoothness in graphs.

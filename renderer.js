@@ -35,14 +35,19 @@ class Renderer {
 		this.targBuffer = this.gl.createFramebuffer();
 		this.accumBuffer = this.gl.createFramebuffer();
 		
-		this.startTime = new Date().getTime() / 1000;
+		this.resetTime();
 		this.drawIsolines = true;
 		this.accumFrames = 0;
 		this.maxAccumFrames = 1000;
 		this.randomizeSeed();
 		this.wipeAccum = false;
+		this.usesTime = false;
 		
 		this.fixSize(true);
+	}
+	
+	resetTime() {
+		this.startTime = new Date().getTime() / 1000;
 	}
 	
 	resetAccumulation() {
@@ -100,8 +105,14 @@ class Renderer {
 			this.compiler.compileFunctions(this.equaTable);
 			this.resetAccumulation();
 		}
+		let usedTime = this.usesTime;
+		this.usesTime = false;
 		for(let id in this.equaTable.equations) {
 			let equa = this.equaTable.equations[id];
+			if(equa.content.match(/(?<![a-zA-Z0-9])time(?![a-zA-Z0-9])/)) {
+				if(!usedTime) this.resetTime();
+				this.usesTime = true;
+			}
 			if(equa.isFunction) continue;
 			if(equa.isModified || this.compiler.forceRecompile) {
 				equa.isModified = false;
@@ -199,11 +210,11 @@ class Renderer {
 	}
 	
 	render(dt) {
-		if(this.display.camera.hasChanged()) {
-			this.resetAccumulation();
-		}
 		if(Date.now() - this.equaTable.lastModified > 250) {
 			this.updateCompiledShaders();
+		}
+		if(this.usesTime || this.display.camera.hasChanged()) {
+			this.resetAccumulation();
 		}
 		if(this.accumFrames < this.maxAccumFrames) {
 			this.fixSize();
@@ -228,7 +239,7 @@ class Renderer {
 		this.gl.uniform1ui(uSeed, this.randomSeed);
 		let uDrawIsolines = this.gl.getUniformLocation(equa.program, '_drawIsolines');
 		this.gl.uniform1ui(uDrawIsolines, this.drawIsolines);
-		let uCurTime = this.gl.getUniformLocation(equa.program, '_curTime');
+		let uCurTime = this.gl.getUniformLocation(equa.program, 'time');
 		this.gl.uniform1f(uCurTime, new Date().getTime() / 1000 - this.startTime);
 		let uUseJitter = this.gl.getUniformLocation(equa.program, '_useJitter');
 		this.gl.uniform1ui(uUseJitter, this.accumFrames > 0);

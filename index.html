@@ -77,9 +77,10 @@
 					<button title="Delete Saved Graph" onclick="initModal('Delete', unsave, 'danger')" class="bi bi-trash btn text-danger nohover fs-3 px-1"></button>
 					
 					<button title="Reset Viewport" onclick="display.resetCamera()" class="bi bi-house btn text-info nohover fs-3 ps-1" style="float: right;"></button>
-					<button title="Make Aspect Ratio 1:1" onclick="display.camera.fixAspectRatio()" class="bi bi-aspect-ratio btn text-success nohover fs-3 px-1" style="float: right;"></button>
+					<button title="Make Aspect Ratio 1:1" onclick="display.camera.fixAspectRatio()" class="bi bi-aspect-ratio btn text-info nohover fs-3 px-1" style="float: right;"></button>
 					<button id="toggle-isolines" title="Toggle Isolines" onclick="toggleIsolines()" class="bi bi-radar btn text-light nohover fs-3 px-1" style="float: right;"></button>
-					<button title="Randomize Seed" onclick="renderer.randomizeSeed()" class="bi bi-dice-6 btn nohover fs-3 px-1" style="float: right; color: #D08FD6"></button>
+					<button title="Randomize Seed" onclick="renderer.randomizeSeed()" class="bi bi-dice-6 btn nohover fs-3 px-1" style="float: right; color: #a45ae5"></button>
+					<button title="Reset Time" onclick="renderer.resetTime()" class="bi bi-clock-history btn nohover fs-3 px-1" style="float: right; color: #a45ae5"></button>
 					<button title="Settings (NON-FUNCTIONAL)" onclick="console.log('open settings')" data-bs-toggle="modal" data-bs-target="#settings-modal" class="bi bi-gear btn text-success-emphasis nohover fs-3 px-1" style="float: right;"></button>
 					<a title="Documentation and GitHub Page" href="https://github.com/AirborneDetergent/Graffey#graffey" target="_blank" class="bi bi-question-lg btn nohover fs-3 px-0" style="float: right; color: #FF8800;"></a>
 				</div>
@@ -152,7 +153,7 @@
 			uniform vec3 _invColor;
 			uniform uint _seed;
 			uniform bool _drawIsolines;
-			uniform float _curTime;
+			uniform float time;
 			uniform bool _useJitter;
 			
 			out vec4 _fragColor;
@@ -317,8 +318,8 @@
 			
 			void main() {
 				vec2 offset = vec2(
-					rand(gl_FragCoord.x - 3.37812, gl_FragCoord.y + 5.23477, _curTime) - 0.5,
-					rand(gl_FragCoord.x + 7.47238, gl_FragCoord.y - 2.64903, _curTime + 1238.2737) - 0.5
+					rand(gl_FragCoord.x - 3.37812, gl_FragCoord.y + 5.23477, time) - 0.5,
+					rand(gl_FragCoord.x + 7.47238, gl_FragCoord.y - 2.64903, time + 1238.2737) - 0.5
 				);
 				vec4 col = _(METHOD)(gl_FragCoord.xy + offset * (_useJitter ? 1.0 : 0.01));
 				col.rgb = pow(col.rgb, vec3(1.0 / 2.2));
