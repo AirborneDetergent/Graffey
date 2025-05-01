@@ -225,6 +225,10 @@ class Renderer {
 		}
 	}
 	
+	getCurTime() {
+		return new Date().getTime() / 1000 - this.startTime;
+	}
+	
 	renderEquation(equa) {
 		this.gl.useProgram(equa.program);
 		let uBounds = this.gl.getUniformLocation(equa.program, '_bounds');
@@ -240,7 +244,7 @@ class Renderer {
 		let uDrawIsolines = this.gl.getUniformLocation(equa.program, '_drawIsolines');
 		this.gl.uniform1ui(uDrawIsolines, this.drawIsolines);
 		let uCurTime = this.gl.getUniformLocation(equa.program, 'time');
-		this.gl.uniform1f(uCurTime, new Date().getTime() / 1000 - this.startTime);
+		this.gl.uniform1f(uCurTime, this.getCurTime());
 		let uUseJitter = this.gl.getUniformLocation(equa.program, '_useJitter');
 		this.gl.uniform1ui(uUseJitter, this.accumFrames > 0);
 		this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
