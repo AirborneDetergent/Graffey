@@ -307,7 +307,7 @@
 				}
 				vec3 col = (val > 0.0) ? _color : _invColor;
 				float alpha = 0.8;
-				float colStren = 1.0-1.0/(abs(val)+1.0);
+				float colStren = 1.0 - 1.0 / (abs(val * 2.0) + 1.0);
 				col *= colStren * colStren;
 				if(_drawIsolines && _gridSampleIsolines(pix, _func(_pixToCoord(pix)))) {
 					col = vec3(mix(vec3(1.0), col, 0.2));
